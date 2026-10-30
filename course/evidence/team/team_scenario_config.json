@@ -1,0 +1,27 @@
+{
+    "scenario_name": "Mountain Pass (team case study)",
+    "system_under_test": "vehicle LKAS simplified model",
+    "vehicle_env": {
+        "map_size": 200,
+        "min_len": 5,
+        "max_len": 12,
+        "min_angle": 25,
+        "max_angle": 80
+    },
+    "vehicle_env_shipped_defaults": {
+        "map_size": 200,
+        "min_len": 5,
+        "max_len": 30,
+        "min_angle": 10,
+        "max_angle": 80
+    },
+    "failure_threshold": 6,
+    "failure_threshold_shipped_default": 5,
+    "ga": {
+        "pop_size": 20,
+        "n_gen": 15,
+        "mut_rate": 0.4,
+        "cross_rate": 0.9,
+        "test_suite_size": 5
+    }
+}

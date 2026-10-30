@@ -1,0 +1,41 @@
+2026-10-16 20:46:24,808 INFO     Started test generation, writing logs to file:  logs.txt
+2026-10-16 20:46:24,899 INFO     Running the optimization
+2026-10-16 20:46:24,899 INFO     Problem: robot, Algorithm: nsga2, Runs number: 1, Saving the results: True
+2026-10-16 20:46:24,903 INFO     Executing run 0: 
+2026-10-16 20:46:24,904 INFO     Using random seed: 42
+2026-10-16 20:47:33,739 INFO     Execution time, 68.831517 sec
+2026-10-16 20:47:37,132 INFO     Test suite of 5 test scenarios generated
+2026-10-16 20:47:37,132 INFO     The highest fitness found: 132.083261
+2026-10-16 20:47:37,136 INFO     Average diversity: 0.436659
+2026-10-16 20:47:37,656 INFO     Stats saved as 16-10-2026_stats_nsga2\16-10-2026-stats.json
+2026-10-16 20:47:37,664 INFO     Stats saved as 16-10-2026_stats_nsga2\16-10-2026-conv.json
+2026-10-16 20:47:37,676 INFO     Test cases saved as 16-10-2026_tcs_nsga2\16-10-2026-tcs.json
+2026-10-16 20:47:50,254 INFO     Images saved in 16-10-2026_tc_images_nsga2
+
+Compiled modules for significant speedup can not be used!
+https://pymoo.org/installation.html#installation
+
+To disable this warning:
+from pymoo.config import Config
+Config.warnings['not_compiled'] = False
+
+==========================================================================================
+n_gen  |  n_eval  | n_nds  |     cv_min    |     cv_avg    |      eps      |   indicator  
+==========================================================================================
+     1 |       20 |      1 |  5.298781E+01 |  8.493964E+01 |             - |             -
+     2 |       40 |      1 |  5.298781E+01 |  8.052456E+01 |             - |             -
+     3 |       60 |      1 |  4.474517E+01 |  7.497898E+01 |             - |             -
+     4 |       80 |      1 |  4.474517E+01 |  6.870740E+01 |             - |             -
+     5 |      100 |      1 |  4.474517E+01 |  6.191243E+01 |             - |             -
+     6 |      120 |      1 |  4.474517E+01 |  5.795679E+01 |             - |             -
+     7 |      140 |      1 |  2.308831E+01 |  5.177984E+01 |             - |             -
+     8 |      160 |      1 |  2.308831E+01 |  4.876771E+01 |             - |             -
+     9 |      180 |      1 |  2.308831E+01 |  4.724639E+01 |             - |             -
+    10 |      200 |      1 |  2.308831E+01 |  4.563928E+01 |             - |             -
+    11 |      220 |      1 |  2.308831E+01 |  4.310288E+01 |             - |             -
+    12 |      240 |      1 |  1.791674E+01 |  3.966649E+01 |             - |             -
+    13 |      260 |      1 |  1.791674E+01 |  3.948070E+01 |             - |             -
+    14 |      280 |      1 |  1.791674E+01 |  3.851710E+01 |             - |             -
+    15 |      300 |      1 |  1.791674E+01 |  3.609283E+01 |             - |             -
+
+[run_builtin_robot] total wall time: 85.5s
