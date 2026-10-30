@@ -1,0 +1,9 @@
+.venv/
+**/.venv/
+AmbieGen-tool/
+__pycache__/
+.pytest_cache/
+*.pyc
+.zcode/
+node_modules/
+.DS_Store
