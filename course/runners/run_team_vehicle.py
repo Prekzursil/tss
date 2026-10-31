@@ -24,7 +24,6 @@ Repo files are NOT modified:
     the renderer mirrors VehicleSolution.build_image
     (ambiegen/solutions/vehicle_solution.py:103-154).
 """
-import copy
 import json
 import os
 import sys
