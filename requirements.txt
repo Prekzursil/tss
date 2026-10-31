@@ -1,0 +1,15 @@
+# Runtime + test manifest for the lean quality gate (and humans).
+#
+# The QZP lean gate installs this file before its type lane, so every import
+# the suite and the sources declare (python-pptx at runtime, pytest in the
+# test files) resolves under basedpyright --warnings — the gate's bar is zero
+# errors AND zero warnings, and an unresolvable import is a warning. This
+# mirrors exactly what tss-ci installs (ci.yml "Install dependencies") and
+# the pyproject.toml declarations: python-pptx>=1.0 (runtime), pytest>=8 and
+# pytest-cov>=5 (test extra).
+#
+# The gate's own coverage lane still pins its measuring tools (pytest 9.1.1,
+# pytest-cov 7.1.0, coverage 7.16.2) on top of this file.
+python-pptx>=1.0
+pytest>=8
+pytest-cov>=5
