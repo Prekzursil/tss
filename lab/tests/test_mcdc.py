@@ -305,9 +305,7 @@ def test_mcdc_c13_totals_override_not_none():
     taxable=100, rate=10, apply flags False. Only override presence flips.
     """
     computed = _totals(Decimal("0"), vat_enabled=True, vat_override=None)
-    overridden = _totals(
-        Decimal("0"), vat_enabled=True, vat_override=Decimal("3")
-    )
+    overridden = _totals(Decimal("0"), vat_enabled=True, vat_override=Decimal("3"))
     assert computed.vat == Decimal("10.00")  # C13 False -> arm 3 (computed)
     assert computed.total == Decimal("110.00")
     assert overridden.vat == Decimal("3.00")  # C13 True -> arm 2 (override)

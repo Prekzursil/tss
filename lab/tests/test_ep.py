@@ -17,7 +17,6 @@ import dataclasses
 from decimal import Decimal, InvalidOperation
 
 import pytest
-
 from pricing import PricingBreakdown, compute_fee, compute_totals, compute_vat, quantize_money
 
 
@@ -139,145 +138,112 @@ def test_q_invalid_nonnumeric_object_raises_typeerror():
 
 def test_f1_enabled_false_zero_regardless():
     # E-1: enabled=False -> 0.00, all other fee inputs ignored (F1)
-    assert (
-        compute_fee(
-            taxable_subtotal=Decimal("1000000"),
-            enabled=False,
-            fee_type="percent",
-            fee_value=Decimal("9999"),
-        )
-        == Decimal("0.00")
-    )
+    assert compute_fee(
+        taxable_subtotal=Decimal("1000000"),
+        enabled=False,
+        fee_type="percent",
+        fee_value=Decimal("9999"),
+    ) == Decimal("0.00")
 
 
 def test_f2_fee_value_nonpositive_zero():
     # M-4: fee_value <= 0 is ONE class — zero and negative treated
     # identically, both -> 0.00 (F2)
-    assert (
-        compute_fee(
-            taxable_subtotal=Decimal("100.00"),
-            enabled=True,
-            fee_type="flat",
-            fee_value=Decimal("0"),
-        )
-        == Decimal("0.00")
-    )
-    assert (
-        compute_fee(
-            taxable_subtotal=Decimal("100.00"),
-            enabled=True,
-            fee_type="flat",
-            fee_value=Decimal("-10"),
-        )
-        == Decimal("0.00")
-    )
+    assert compute_fee(
+        taxable_subtotal=Decimal("100.00"),
+        enabled=True,
+        fee_type="flat",
+        fee_value=Decimal("0"),
+    ) == Decimal("0.00")
+    assert compute_fee(
+        taxable_subtotal=Decimal("100.00"),
+        enabled=True,
+        fee_type="flat",
+        fee_value=Decimal("-10"),
+    ) == Decimal("0.00")
 
 
 def test_f3_percent_below_100():
     # T-1/M-1/M-5: fee_type="percent", 0 < p < 100 (F3)
-    assert (
-        compute_fee(
-            taxable_subtotal=Decimal("100.00"),
-            enabled=True,
-            fee_type="percent",
-            fee_value=Decimal("10"),
-        )
-        == Decimal("10.00")
-    )
+    assert compute_fee(
+        taxable_subtotal=Decimal("100.00"),
+        enabled=True,
+        fee_type="percent",
+        fee_value=Decimal("10"),
+    ) == Decimal("10.00")
 
 
 def test_f3_percent_at_or_above_100():
     # M-6: percent >= 100 is allowed, not rejected (F3, §3)
-    assert (
-        compute_fee(
-            taxable_subtotal=Decimal("50.00"),
-            enabled=True,
-            fee_type="percent",
-            fee_value=Decimal("150"),
-        )
-        == Decimal("75.00")
-    )
+    assert compute_fee(
+        taxable_subtotal=Decimal("50.00"),
+        enabled=True,
+        fee_type="percent",
+        fee_value=Decimal("150"),
+    ) == Decimal("75.00")
 
 
 def test_f4_flat_quantizes_fee_value():
     # T-2/M-7: fee_type="flat" -> fee = round(fee_value); >2dp precision (F4)
-    assert (
-        compute_fee(
-            taxable_subtotal=Decimal("100.00"),
-            enabled=True,
-            fee_type="flat",
-            fee_value=Decimal("7.777"),
-        )
-        == Decimal("7.78")
-    )
+    assert compute_fee(
+        taxable_subtotal=Decimal("100.00"),
+        enabled=True,
+        fee_type="flat",
+        fee_value=Decimal("7.777"),
+    ) == Decimal("7.78")
 
 
 def test_f4_other_fee_type_behaves_flat():
     # T-3: any string other than "percent" behaves like "flat", no error (§3/F4)
-    assert (
-        compute_fee(
-            taxable_subtotal=Decimal("100.00"),
-            enabled=True,
-            fee_type="FIXED",
-            fee_value=Decimal("7.777"),
-        )
-        == Decimal("7.78")
-    )
+    assert compute_fee(
+        taxable_subtotal=Decimal("100.00"),
+        enabled=True,
+        fee_type="FIXED",
+        fee_value=Decimal("7.777"),
+    ) == Decimal("7.78")
 
 
 def test_f3_percent_zero_taxable():
     # M-2: taxable_subtotal zero, percent -> 0.00 (F3 formula)
-    assert (
-        compute_fee(
-            taxable_subtotal=Decimal("0"),
-            enabled=True,
-            fee_type="percent",
-            fee_value=Decimal("10"),
-        )
-        == Decimal("0.00")
-    )
+    assert compute_fee(
+        taxable_subtotal=Decimal("0"),
+        enabled=True,
+        fee_type="percent",
+        fee_value=Decimal("10"),
+    ) == Decimal("0.00")
 
 
 def test_f3_percent_negative_taxable():
     # M-3: taxable_subtotal negative -> F3 formula yields a negative fee
     # (F5's non-negativity guarantee is scoped to non-negative subtotals)
-    assert (
-        compute_fee(
-            taxable_subtotal=Decimal("-100.00"),
-            enabled=True,
-            fee_type="percent",
-            fee_value=Decimal("10"),
-        )
-        == Decimal("-10.00")
-    )
+    assert compute_fee(
+        taxable_subtotal=Decimal("-100.00"),
+        enabled=True,
+        fee_type="percent",
+        fee_value=Decimal("10"),
+    ) == Decimal("-10.00")
 
 
 def test_f_rounding_propagates_down_flat():
     # R-7: the selected rounding mode reaches compute_fee (flat, F4)
-    assert (
-        compute_fee(
-            taxable_subtotal=Decimal("100.00"),
-            enabled=True,
-            fee_type="flat",
-            fee_value=Decimal("7.779"),
-            rounding="down",
-        )
-        == Decimal("7.77")
-    )
+    assert compute_fee(
+        taxable_subtotal=Decimal("100.00"),
+        enabled=True,
+        fee_type="flat",
+        fee_value=Decimal("7.779"),
+        rounding="down",
+    ) == Decimal("7.77")
 
 
 def test_f_rounding_propagates_up_percent():
     # R-8: rounding reaches compute_fee (percent, F3): 100.05*10/100 = 10.005
-    assert (
-        compute_fee(
-            taxable_subtotal=Decimal("100.05"),
-            enabled=True,
-            fee_type="percent",
-            fee_value=Decimal("10"),
-            rounding="up",
-        )
-        == Decimal("10.01")
-    )
+    assert compute_fee(
+        taxable_subtotal=Decimal("100.05"),
+        enabled=True,
+        fee_type="percent",
+        fee_value=Decimal("10"),
+        rounding="up",
+    ) == Decimal("10.01")
 
 
 # ---------------------------------------------------------------------------
@@ -365,16 +331,13 @@ def test_v3_negative_shipping_reduces_base():
 
 def test_v_rounding_propagates_down():
     # R-9: rounding reaches compute_vat (V5): 100.05*10/100 = 10.005 -> 10.00
-    assert (
-        _vat(
-            taxable_subtotal=Decimal("100.05"),
-            shipping=Decimal("0"),
-            fee=Decimal("0"),
-            vat_rate_percent=Decimal("10"),
-            rounding="down",
-        )
-        == Decimal("10.00")
-    )
+    assert _vat(
+        taxable_subtotal=Decimal("100.05"),
+        shipping=Decimal("0"),
+        fee=Decimal("0"),
+        vat_rate_percent=Decimal("10"),
+        rounding="down",
+    ) == Decimal("10.00")
 
 
 # ---------------------------------------------------------------------------

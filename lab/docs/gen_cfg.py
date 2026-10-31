@@ -345,7 +345,6 @@ def edge_geometry(eid, src, dst):
     p_src, p_dst = (cx(src), cy(src)), (cx(dst), cy(dst))
     if eid in ("E17", "E20", "E30"):
         rail = rail_points(eid)
-        y_top, y_bot = min(cy(src), cy(dst)), max(cy(src), cy(dst))
         pts = [(p_src[0], p_src[1]), (rail, p_src[1]),
                (rail, p_dst[1]), (p_dst[0], p_dst[1])]
         # trim to box borders
@@ -654,7 +653,7 @@ def verify_basis(ctrl):
         rows = []
         for pid, steps in paths:
             ids = []
-            for (a, b) in zip(steps, steps[1:]):
+            for (a, b) in zip(steps, steps[1:], strict=False):
                 cand = by_pair.get((a[0], b[0]), [])
                 want = a[1]
                 hit = None

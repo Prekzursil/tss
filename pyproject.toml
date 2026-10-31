@@ -1,0 +1,88 @@
+[project]
+name = "tss"
+version = "1.0.0"
+description = "TSS Software Systems Testing: systematic testing lab (EP/BVA/CEG, CFG, MC/DC, mutation) + AmbieGen search-based test generation course project."
+requires-python = ">=3.10"
+dependencies = [
+  "python-pptx>=1.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pytest-cov>=5"]
+
+# ── Coverage scope (strict-zero, honestly bounded) ─────────────────────────
+# Measured at 100% line+branch:
+#   lab/pricing.py     — the analysis target under systematic test (212 tests)
+#   course/qa_deck.py  — the deck QA gate (unit-tested on synthetic decks)
+# Deliberately NOT in the measured scope — one-shot experiment/artifact
+# generators whose *outputs* are the committed, QA'd deliverables:
+#   course/build_deck.py   — generates the committed deck.pptx (verified by
+#                            qa_deck.py on the artifact, not line-by-line)
+#   course/runners/*.py    — AmbieGen experiment drivers; require the
+#                            uncommitted upstream AmbieGen-tool clone
+#   lab/mutants/*.py       — mutation-testing demo drivers; the mutation
+#                            scores themselves are the delivered evidence
+[tool.coverage.run]
+branch = true
+source = ["lab", "course"]
+omit = [
+  "lab/mutants/*",
+  "lab/tests/*",
+  "course/runners/*",
+  "course/tests/*",
+  "course/build_deck.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+fail_under = 100
+exclude_also = [
+  # module entry guards: exercised by direct invocation, not by the suite
+  "if __name__ == .__main__.:",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["lab/tests", "course/tests"]
+python_files = ["test_*.py"]
+addopts = "-p no:cacheprovider"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["course/AmbieGen-tool", "lab/mutants", "course/runners"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# One-shot artifact generators whose OUTPUTS are the committed, QA'd
+# deliverables (deck.pptx / cfg.drawio+cfg.svg, each self-verified by its own
+# checker). Style-only rules are relaxed here; bug-catching rules (F, B905…)
+# remain fully active.
+"course/build_deck.py" = ["E501", "UP031", "E702", "B007"]
+"lab/docs/gen_cfg.py" = ["E501", "UP031", "E702", "B007"]
+# lab/pricing.py is the FROZEN analysis target: its import order and line
+# layout are referenced by SPEC.md, cfg-analysis.md and the mutant maps, so
+# import sorting (I001) is waived. Behavior rules stay active.
+"lab/pricing.py" = ["I001"]
+
+# ruff FORMAT stability carve-outs: `lab/pricing.py` is the analysis target —
+# the lab docs (SPEC.md, cfg-analysis.md, the mutant maps) reference its exact
+# line structure, so its formatting is frozen; `lab/docs/gen_cfg.py` emits
+# cfg.drawio/cfg.svg and self-verifies against them (output-coupled — its
+# formatting is frozen too); Markdown files are frozen so doc snippets match
+# the PDFs generated from them.
+[tool.ruff.format]
+exclude = ["lab/pricing.py", "lab/docs/gen_cfg.py", "*.md", "docs/**"]
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
+pythonVersion = "3.10"
+exclude = [
+  "course/AmbieGen-tool",
+  "lab/mutants",
+  "course/runners",
+  "course/build_deck.py",
+]
+reportMissingImports = "warning"
