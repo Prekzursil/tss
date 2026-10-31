@@ -27,9 +27,17 @@ from decimal import Decimal
 from pricing import PricingBreakdown, compute_totals
 
 
-def assert_column(result: PricingBreakdown, *, subtotal: str, discount: str,
-                  taxable: str, shipping: str, fee: str, vat: str,
-                  total: str) -> None:
+def assert_column(
+    result: PricingBreakdown,
+    *,
+    subtotal: str,
+    discount: str,
+    taxable: str,
+    shipping: str,
+    fee: str,
+    vat: str,
+    total: str,
+) -> None:
     """Assert the exact breakdown of one decision-table column (E10 incl.)."""
     assert result == PricingBreakdown(
         subtotal=Decimal(subtotal),
@@ -42,14 +50,14 @@ def assert_column(result: PricingBreakdown, *, subtotal: str, discount: str,
     )
     # E10 (T7): the total is exactly the sum of the reported summands and is
     # non-negative by construction in every feasible column.
-    assert result.total == (result.taxable_subtotal + result.shipping
-                            + result.fee + result.vat)
+    assert result.total == (result.taxable_subtotal + result.shipping + result.fee + result.vat)
     assert result.total >= 0
 
 
 # --------------------------------------------------------------------------
 # Fee decision: fee applied (flat / percent) or 0  (E1, E2, E3)
 # --------------------------------------------------------------------------
+
 
 def test_col_01_fee_flat_applied():
     """Column 1: C1∧C2∧¬C3 → E2 flat fee; also the E8 computed-VAT frame."""
@@ -67,9 +75,16 @@ def test_col_01_fee_flat_applied():
         vat_override=None,
     )
     # base = 100.00 + 10.00 + 5.00 = 115.00 → vat = 11.50
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="5.00",
-                  vat="11.50", total="126.50")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="5.00",
+        vat="11.50",
+        total="126.50",
+    )
 
 
 def test_col_02_fee_percent_applied():
@@ -88,9 +103,16 @@ def test_col_02_fee_percent_applied():
         vat_override=None,
     )
     # fee = 100.00 * 7 / 100 = 7.00; base = 117.00 → vat = 11.70
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="7.00",
-                  vat="11.70", total="128.70")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="7.00",
+        vat="11.70",
+        total="128.70",
+    )
 
 
 def test_col_03_fee_zero_when_disabled():
@@ -109,9 +131,16 @@ def test_col_03_fee_zero_when_disabled():
         vat_override=None,
     )
     # fee = 0.00 → base = 110.00 → vat = 11.00
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="0.00",
-                  vat="11.00", total="121.00")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="0.00",
+        vat="11.00",
+        total="121.00",
+    )
 
 
 def test_col_04_fee_zero_when_value_nonpositive():
@@ -130,14 +159,22 @@ def test_col_04_fee_zero_when_value_nonpositive():
         vat_override=None,
     )
     # fee = 0.00 → base = 110.00 → vat = 11.00
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="0.00",
-                  vat="11.00", total="121.00")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="0.00",
+        vat="11.00",
+        total="121.00",
+    )
 
 
 # --------------------------------------------------------------------------
 # VAT base composition: taxable [+ shipping if C6∧C12] [+ fee if C7∧fee>0]
 # --------------------------------------------------------------------------
+
 
 def test_col_05_vat_base_taxable_only():
     """Column 5: C6=F, C7=F → base = taxable alone."""
@@ -155,9 +192,16 @@ def test_col_05_vat_base_taxable_only():
         vat_override=None,
     )
     # base = 100.00 → vat = 10.00
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="5.00",
-                  vat="10.00", total="125.00")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="5.00",
+        vat="10.00",
+        total="125.00",
+    )
 
 
 def test_col_06_vat_base_plus_shipping():
@@ -176,9 +220,16 @@ def test_col_06_vat_base_plus_shipping():
         vat_override=None,
     )
     # base = 110.00 → vat = 11.00
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="5.00",
-                  vat="11.00", total="126.00")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="5.00",
+        vat="11.00",
+        total="126.00",
+    )
 
 
 def test_col_07_vat_base_plus_fee():
@@ -197,9 +248,16 @@ def test_col_07_vat_base_plus_fee():
         vat_override=None,
     )
     # base = 105.00 → vat = 10.50
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="5.00",
-                  vat="10.50", total="125.50")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="5.00",
+        vat="10.50",
+        total="125.50",
+    )
 
 
 def test_col_08_shipping_flag_true_but_nonpositive_shipping_contributes_nothing():
@@ -219,9 +277,16 @@ def test_col_08_shipping_flag_true_but_nonpositive_shipping_contributes_nothing(
         vat_override=None,
     )
     # shipping_q = 0.00; base = 100.00 + 0.00 → vat = 10.00
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="0.00", fee="5.00",
-                  vat="10.00", total="115.00")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="0.00",
+        fee="5.00",
+        vat="10.00",
+        total="115.00",
+    )
 
 
 def test_col_09_fee_flag_true_but_zero_fee_contributes_nothing():
@@ -242,15 +307,23 @@ def test_col_09_fee_flag_true_but_zero_fee_contributes_nothing():
     )
     # fee = 0.00 (F2); base = 100.00 + 0.00 → vat = 10.00;
     # total = 100 + 10 + 0 + 10 = 120.00
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="0.00",
-                  vat="10.00", total="120.00")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="0.00",
+        vat="10.00",
+        total="120.00",
+    )
 
 
 # --------------------------------------------------------------------------
 # VAT resolution: 0 (disabled / clamped override / rate / base) vs override
 # vs computed  (E4, E5, E6, E7, E8)
 # --------------------------------------------------------------------------
+
 
 def test_col_10_vat_disabled_override_ignored():
     """Column 10: ¬C4 → E4 vat 0.00; a positive override (C9∧C10) present
@@ -269,9 +342,16 @@ def test_col_10_vat_disabled_override_ignored():
         vat_override=Decimal("99.99"),
     )
     # vat = 0.00 despite override 99.99; total = 100 + 10 + 5 + 0
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="5.00",
-                  vat="0.00", total="115.00")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="5.00",
+        vat="0.00",
+        total="115.00",
+    )
 
 
 def test_col_11_vat_override_positive_wins():
@@ -291,9 +371,16 @@ def test_col_11_vat_override_positive_wins():
         vat_override=Decimal("8.75"),
     )
     # vat = 8.75 (not 11.50); total = 100 + 10 + 5 + 8.75
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="5.00",
-                  vat="8.75", total="123.75")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="5.00",
+        vat="8.75",
+        total="123.75",
+    )
 
 
 def test_col_12_vat_override_nonpositive_clamped():
@@ -313,9 +400,16 @@ def test_col_12_vat_override_nonpositive_clamped():
         vat_override=Decimal("-8.75"),
     )
     # vat = max(0, -8.75) = 0.00; total = 100 + 10 + 5 + 0
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="5.00",
-                  vat="0.00", total="115.00")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="5.00",
+        vat="0.00",
+        total="115.00",
+    )
 
 
 def test_col_13_vat_zero_when_rate_nonpositive():
@@ -335,9 +429,16 @@ def test_col_13_vat_zero_when_rate_nonpositive():
         vat_override=None,
     )
     # rate ≤ 0 → vat = 0.00
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="5.00",
-                  vat="0.00", total="115.00")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="5.00",
+        vat="0.00",
+        total="115.00",
+    )
 
 
 def test_col_14_vat_zero_when_base_zero_and_taxable_floored():
@@ -361,14 +462,22 @@ def test_col_14_vat_zero_when_base_zero_and_taxable_floored():
     # taxable = max(0, 100.00 - 250.00) = 0.00; fee = 0% of 0 = 0.00;
     # base = 0 → vat = 0.00; total = 0; discount is reported as 250.00
     # (the excess is not refunded anywhere else — T3).
-    assert_column(result, subtotal="100.00", discount="250.00",
-                  taxable="0.00", shipping="0.00", fee="0.00",
-                  vat="0.00", total="0.00")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="250.00",
+        taxable="0.00",
+        shipping="0.00",
+        fee="0.00",
+        vat="0.00",
+        total="0.00",
+    )
 
 
 # --------------------------------------------------------------------------
 # Totals clamping: discount/shipping contribution, taxable floor, total sign
 # --------------------------------------------------------------------------
+
 
 def test_col_15_negative_discount_reports_zero():
     """Column 15: ¬C11 → the reported discount is 0.00 (T2: a non-positive
@@ -387,9 +496,16 @@ def test_col_15_negative_discount_reports_zero():
         vat_override=None,
     )
     # discount ≤ 0 → 0.00; taxable = 100.00; same arithmetic as column 1
-    assert_column(result, subtotal="100.00", discount="0.00",
-                  taxable="100.00", shipping="10.00", fee="5.00",
-                  vat="11.50", total="126.50")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="0.00",
+        taxable="100.00",
+        shipping="10.00",
+        fee="5.00",
+        vat="11.50",
+        total="126.50",
+    )
 
 
 def test_col_16_positive_discount_below_subtotal_reduces_taxable():
@@ -410,9 +526,16 @@ def test_col_16_positive_discount_below_subtotal_reduces_taxable():
     )
     # taxable = 75.00; base = 75 + 10 + 5 = 90.00 → vat = 9.00;
     # total = 75 + 10 + 5 + 9 = 99.00
-    assert_column(result, subtotal="100.00", discount="25.00",
-                  taxable="75.00", shipping="10.00", fee="5.00",
-                  vat="9.00", total="99.00")
+    assert_column(
+        result,
+        subtotal="100.00",
+        discount="25.00",
+        taxable="75.00",
+        shipping="10.00",
+        fee="5.00",
+        vat="9.00",
+        total="99.00",
+    )
 
 
 def test_col_17_negative_subtotal_reported_as_is_taxable_floored_total_nonnegative():
@@ -436,6 +559,13 @@ def test_col_17_negative_subtotal_reported_as_is_taxable_floored_total_nonnegati
     # subtotal reported -50.00 (no clamp); taxable = max(0, -50.00) = 0.00;
     # fee = 5.00 (flat, independent of the floored taxable);
     # base = 0 + 10 + 5 = 15.00 → vat = 1.50; total = 16.50 ≥ 0
-    assert_column(result, subtotal="-50.00", discount="0.00",
-                  taxable="0.00", shipping="10.00", fee="5.00",
-                  vat="1.50", total="16.50")
+    assert_column(
+        result,
+        subtotal="-50.00",
+        discount="0.00",
+        taxable="0.00",
+        shipping="10.00",
+        fee="5.00",
+        vat="1.50",
+        total="16.50",
+    )

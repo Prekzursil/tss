@@ -13,6 +13,7 @@ docs/mcdc.md §4.
 """
 
 from decimal import Decimal
+from typing import Any
 
 import pricing
 
@@ -224,7 +225,7 @@ def test_mcdc_c08_compute_vat_base_le_zero():
 
 def _totals(discount, **overrides):
     """Common fixed context for the compute_totals pairs (P9-P14)."""
-    kwargs = dict(
+    kwargs: dict[str, Any] = dict(
         subtotal=Decimal("100"),
         discount=discount,
         shipping=Decimal("0"),
@@ -305,9 +306,7 @@ def test_mcdc_c13_totals_override_not_none():
     taxable=100, rate=10, apply flags False. Only override presence flips.
     """
     computed = _totals(Decimal("0"), vat_enabled=True, vat_override=None)
-    overridden = _totals(
-        Decimal("0"), vat_enabled=True, vat_override=Decimal("3")
-    )
+    overridden = _totals(Decimal("0"), vat_enabled=True, vat_override=Decimal("3"))
     assert computed.vat == Decimal("10.00")  # C13 False -> arm 3 (computed)
     assert computed.total == Decimal("110.00")
     assert overridden.vat == Decimal("3.00")  # C13 True -> arm 2 (override)

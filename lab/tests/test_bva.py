@@ -10,9 +10,9 @@ B-id references below map to the tables in docs/bva.md.
 """
 
 from decimal import Decimal
+from typing import Any
 
 import pytest
-
 from pricing import compute_fee, compute_totals, compute_vat, quantize_money
 
 D = Decimal
@@ -22,7 +22,7 @@ MODES = ("half_up", "half_even", "up", "down")
 
 def totals(**overrides):
     """compute_totals with a neutral baseline; each call is self-contained."""
-    kwargs = dict(
+    kwargs: dict[str, Any] = dict(
         subtotal=D("0"),
         discount=D("0"),
         shipping=D("0"),
@@ -153,29 +153,23 @@ B7_FEE_ZERO_FLAT = [
     "fee_value,expected", B7_FEE_ZERO_FLAT, ids=[r[0] for r in B7_FEE_ZERO_FLAT]
 )
 def test_b7_fee_value_zero_boundary_flat(fee_value, expected):
-    assert (
-        compute_fee(
-            taxable_subtotal=D("100"),
-            enabled=True,
-            fee_type="flat",
-            fee_value=D(fee_value),
-        )
-        == D(expected)
-    )
+    assert compute_fee(
+        taxable_subtotal=D("100"),
+        enabled=True,
+        fee_type="flat",
+        fee_value=D(fee_value),
+    ) == D(expected)
 
 
 def test_b7_fee_value_tie_min_surviving_down_mode():
     # Under "down", even the 0.005 flat fee quantizes back to 0.00.
-    assert (
-        compute_fee(
-            taxable_subtotal=D("100"),
-            enabled=True,
-            fee_type="flat",
-            fee_value=D("0.005"),
-            rounding="down",
-        )
-        == D("0.00")
-    )
+    assert compute_fee(
+        taxable_subtotal=D("100"),
+        enabled=True,
+        fee_type="flat",
+        fee_value=D("0.005"),
+        rounding="down",
+    ) == D("0.00")
 
 
 # B8: fee_value = 0 clamp, percent fee.
@@ -192,15 +186,12 @@ B8_FEE_ZERO_PERCENT = [
     "fee_value,expected", B8_FEE_ZERO_PERCENT, ids=[r[0] for r in B8_FEE_ZERO_PERCENT]
 )
 def test_b8_fee_value_zero_boundary_percent(fee_value, expected):
-    assert (
-        compute_fee(
-            taxable_subtotal=D("100"),
-            enabled=True,
-            fee_type="percent",
-            fee_value=D(fee_value),
-        )
-        == D(expected)
-    )
+    assert compute_fee(
+        taxable_subtotal=D("100"),
+        enabled=True,
+        fee_type="percent",
+        fee_value=D(fee_value),
+    ) == D(expected)
 
 
 # B9: flat fee sub-cent tie — fee = round(fee_value) directly (F4).
@@ -209,20 +200,17 @@ def test_b8_fee_value_zero_boundary_percent(fee_value, expected):
     [("half_up", "2.35"), ("half_even", "2.34"), ("up", "2.35"), ("down", "2.34")],
 )
 def test_b9_flat_fee_tie_per_mode(mode, expected):
-    assert (
-        compute_fee(
-            taxable_subtotal=D("100"),
-            enabled=True,
-            fee_type="flat",
-            fee_value=D("2.345"),
-            rounding=mode,
-        )
-        == D(expected)
-    )
+    assert compute_fee(
+        taxable_subtotal=D("100"),
+        enabled=True,
+        fee_type="flat",
+        fee_value=D("2.345"),
+        rounding=mode,
+    ) == D(expected)
 
 
 def test_b9_flat_fee_tie_neighbors_half_up():
-    kwargs = dict(taxable_subtotal=D("100"), enabled=True, fee_type="flat")
+    kwargs: dict[str, Any] = dict(taxable_subtotal=D("100"), enabled=True, fee_type="flat")
     assert compute_fee(fee_value=D("2.344"), **kwargs) == D("2.34")
     assert compute_fee(fee_value=D("2.346"), **kwargs) == D("2.35")
 
@@ -233,20 +221,17 @@ def test_b9_flat_fee_tie_neighbors_half_up():
     [("half_up", "2.35"), ("half_even", "2.34"), ("up", "2.35"), ("down", "2.34")],
 )
 def test_b10_percent_fee_tie_per_mode(mode, expected):
-    assert (
-        compute_fee(
-            taxable_subtotal=D("23.45"),
-            enabled=True,
-            fee_type="percent",
-            fee_value=D("10"),
-            rounding=mode,
-        )
-        == D(expected)
-    )
+    assert compute_fee(
+        taxable_subtotal=D("23.45"),
+        enabled=True,
+        fee_type="percent",
+        fee_value=D("10"),
+        rounding=mode,
+    ) == D(expected)
 
 
 def test_b10_percent_fee_tie_neighbors_half_up():
-    kwargs = dict(enabled=True, fee_type="percent", fee_value=D("10"))
+    kwargs: dict[str, Any] = dict(enabled=True, fee_type="percent", fee_value=D("10"))
     assert compute_fee(taxable_subtotal=D("23.44"), **kwargs) == D("2.34")
     assert compute_fee(taxable_subtotal=D("23.46"), **kwargs) == D("2.35")
 
@@ -262,19 +247,14 @@ B10_TAXABLE_SIGN = [
 ]
 
 
-@pytest.mark.parametrize(
-    "taxable,expected", B10_TAXABLE_SIGN, ids=[r[0] for r in B10_TAXABLE_SIGN]
-)
+@pytest.mark.parametrize("taxable,expected", B10_TAXABLE_SIGN, ids=[r[0] for r in B10_TAXABLE_SIGN])
 def test_b10_fee_taxable_sign_boundary(taxable, expected):
-    assert (
-        compute_fee(
-            taxable_subtotal=D(taxable),
-            enabled=True,
-            fee_type="percent",
-            fee_value=D("10"),
-        )
-        == D(expected)
-    )
+    assert compute_fee(
+        taxable_subtotal=D(taxable),
+        enabled=True,
+        fee_type="percent",
+        fee_value=D("10"),
+    ) == D(expected)
 
 
 # --------------------------------------------------------------------------
@@ -295,34 +275,28 @@ B11_RATE_ZERO = [
 
 @pytest.mark.parametrize("rate,expected", B11_RATE_ZERO, ids=[r[0] for r in B11_RATE_ZERO])
 def test_b11_vat_rate_zero_boundary(rate, expected):
-    assert (
-        compute_vat(
-            taxable_subtotal=D("100"),
-            shipping=D("0"),
-            fee=D("0"),
-            enabled=True,
-            vat_rate_percent=D(rate),
-            apply_to_shipping=False,
-            apply_to_fee=False,
-        )
-        == D(expected)
-    )
+    assert compute_vat(
+        taxable_subtotal=D("100"),
+        shipping=D("0"),
+        fee=D("0"),
+        enabled=True,
+        vat_rate_percent=D(rate),
+        apply_to_shipping=False,
+        apply_to_fee=False,
+    ) == D(expected)
 
 
 def test_b11_vat_rate_min_surviving_down_mode():
-    assert (
-        compute_vat(
-            taxable_subtotal=D("100"),
-            shipping=D("0"),
-            fee=D("0"),
-            enabled=True,
-            vat_rate_percent=D("0.005"),
-            apply_to_shipping=False,
-            apply_to_fee=False,
-            rounding="down",
-        )
-        == D("0.00")
-    )
+    assert compute_vat(
+        taxable_subtotal=D("100"),
+        shipping=D("0"),
+        fee=D("0"),
+        enabled=True,
+        vat_rate_percent=D("0.005"),
+        apply_to_shipping=False,
+        apply_to_fee=False,
+        rounding="down",
+    ) == D("0.00")
 
 
 # B12: composed base = 0 clamp (V4) — base crossed via shipping offset.
@@ -341,36 +315,28 @@ B12_BASE_ZERO = [
     ids=[f"base={b}" for _, b, _ in B12_BASE_ZERO],
 )
 def test_b12_vat_composed_base_zero_boundary(shipping, base, vat_expected):
-    assert (
-        compute_vat(
-            taxable_subtotal=D("100"),
-            shipping=D(shipping),
-            fee=D("0"),
-            enabled=True,
-            vat_rate_percent=D("100"),
-            apply_to_shipping=True,
-            apply_to_fee=False,
-        )
-        == D(vat_expected)
-    )
+    assert compute_vat(
+        taxable_subtotal=D("100"),
+        shipping=D(shipping),
+        fee=D("0"),
+        enabled=True,
+        vat_rate_percent=D("100"),
+        apply_to_shipping=True,
+        apply_to_fee=False,
+    ) == D(vat_expected)
 
 
-@pytest.mark.parametrize(
-    "taxable,expected", [("-0.01", "0.00"), ("0", "0.00"), ("0.01", "0.01")]
-)
+@pytest.mark.parametrize("taxable,expected", [("-0.01", "0.00"), ("0", "0.00"), ("0.01", "0.01")])
 def test_b12_vat_direct_base_zero_boundary(taxable, expected):
-    assert (
-        compute_vat(
-            taxable_subtotal=D(taxable),
-            shipping=D("0"),
-            fee=D("0"),
-            enabled=True,
-            vat_rate_percent=D("100"),
-            apply_to_shipping=False,
-            apply_to_fee=False,
-        )
-        == D(expected)
-    )
+    assert compute_vat(
+        taxable_subtotal=D(taxable),
+        shipping=D("0"),
+        fee=D("0"),
+        enabled=True,
+        vat_rate_percent=D("100"),
+        apply_to_shipping=False,
+        apply_to_fee=False,
+    ) == D(expected)
 
 
 # B13: VAT rate tie at the third decimal (V5): raw = taxable * 10 / 100.
