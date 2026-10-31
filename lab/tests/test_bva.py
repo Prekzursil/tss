@@ -10,6 +10,7 @@ B-id references below map to the tables in docs/bva.md.
 """
 
 from decimal import Decimal
+from typing import Any
 
 import pytest
 from pricing import compute_fee, compute_totals, compute_vat, quantize_money
@@ -21,7 +22,7 @@ MODES = ("half_up", "half_even", "up", "down")
 
 def totals(**overrides):
     """compute_totals with a neutral baseline; each call is self-contained."""
-    kwargs = dict(
+    kwargs: dict[str, Any] = dict(
         subtotal=D("0"),
         discount=D("0"),
         shipping=D("0"),
@@ -209,7 +210,7 @@ def test_b9_flat_fee_tie_per_mode(mode, expected):
 
 
 def test_b9_flat_fee_tie_neighbors_half_up():
-    kwargs = dict(taxable_subtotal=D("100"), enabled=True, fee_type="flat")
+    kwargs: dict[str, Any] = dict(taxable_subtotal=D("100"), enabled=True, fee_type="flat")
     assert compute_fee(fee_value=D("2.344"), **kwargs) == D("2.34")
     assert compute_fee(fee_value=D("2.346"), **kwargs) == D("2.35")
 
@@ -230,7 +231,7 @@ def test_b10_percent_fee_tie_per_mode(mode, expected):
 
 
 def test_b10_percent_fee_tie_neighbors_half_up():
-    kwargs = dict(enabled=True, fee_type="percent", fee_value=D("10"))
+    kwargs: dict[str, Any] = dict(enabled=True, fee_type="percent", fee_value=D("10"))
     assert compute_fee(taxable_subtotal=D("23.44"), **kwargs) == D("2.34")
     assert compute_fee(taxable_subtotal=D("23.46"), **kwargs) == D("2.35")
 

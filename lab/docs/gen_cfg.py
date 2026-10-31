@@ -550,7 +550,7 @@ def verify_drawio():
     tree = ET.parse(HERE / "cfg.drawio")
     root = tree.getroot().find("diagram/mxGraphModel/root")
     bands, nodes, edges = {}, {}, []
-    for cell in root.findall("mxCell"):
+    for cell in root.findall("mxCell"):  # type: ignore  # pyright: ignore[reportOptionalMemberAccess]
         cid = cell.get("id", "")
         geom = cell.find("mxGeometry")
         if cell.get("vertex") == "1" and geom is not None:
@@ -560,7 +560,7 @@ def verify_drawio():
                 bands[cell.get("value")] = (x, y, w, h)
             elif re.fullmatch(r"N\d+", cid):
                 nodes[cid] = (x + w / 2, y + h / 2)
-    for cell in root.findall("mxCell"):
+    for cell in root.findall("mxCell"):  # type: ignore  # pyright: ignore[reportOptionalMemberAccess]
         if cell.get("edge") == "1":
             edges.append((cell.get("id"), cell.get("source"),
                           cell.get("target"), cell.get("value") or ""))
@@ -781,7 +781,7 @@ def run_traced(func, kwargs):
         if event == "call":
             caller = stack[-1] if stack else None
             if caller is not None:
-                arm = TERNARY_ARM.get(cur_node.get(caller))
+                arm = TERNARY_ARM.get(cur_node.get(caller))  # type: ignore  # pyright: ignore[reportArgumentType]
                 if arm is not None:
                     emit(caller, frame_name.get(caller), arm)
                 call_edges_seen.add((cur_node.get(caller), f))
@@ -793,7 +793,7 @@ def run_traced(func, kwargs):
             cur = cur_node.get(key)
             if cur in ARM_REGION and ln in ARM_REGION[cur]:
                 return tracer  # residual line of an already-resolved ternary
-            synth = TERNARY_ELSE.get((cur, ln))
+            synth = TERNARY_ELSE.get((cur, ln))  # type: ignore  # pyright: ignore[reportArgumentType]
             if synth:
                 emit(key, f, synth)
             node = line_to_node(f, ln, cur_node.get(key))

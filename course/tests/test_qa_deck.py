@@ -21,7 +21,7 @@ if str(COURSE_ROOT) not in sys.path:
 import qa_deck  # noqa: E402
 
 
-def _blank() -> Presentation:
+def _blank():
     # 16:9 default template; python-pptx starts with zero slides, so add one blank
     prs = Presentation()
     prs.slide_width = Inches(13.333)
@@ -30,12 +30,12 @@ def _blank() -> Presentation:
     return prs
 
 
-def _box(prs: Presentation, *, x=0.5, y=0.5, w=4.0, h=1.0) -> None:
+def _box(prs: Presentation, *, x=0.5, y=0.5, w=4.0, h=1.0) -> None:  # type: ignore  # pyright: ignore[reportGeneralTypeIssues]
     slide = prs.slides[0]
     slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
 
 
-def _textbox_with(prs: Presentation, text: str, *, size=18, x=0.5, y=0.5, w=4.0, h=1.0):
+def _textbox_with(prs, text: str, *, size=18, x=0.5, y=0.5, w=4.0, h=1.0):
     slide = prs.slides[0]
     box = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
     tf = box.text_frame

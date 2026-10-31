@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import dataclasses
 from decimal import Decimal, InvalidOperation
+from typing import Any
 
 import pytest
 from pricing import PricingBreakdown, compute_fee, compute_totals, compute_vat, quantize_money
@@ -26,7 +27,7 @@ def _totals(**overrides):
     Each test overrides exactly the inputs whose classes it exercises, so
     every test is independent and scenario-neutral.
     """
-    args = dict(
+    args: dict[str, Any] = dict(
         subtotal=Decimal("0"),
         discount=Decimal("0"),
         shipping=Decimal("0"),
@@ -93,8 +94,8 @@ def test_q_rounding_down():
 
 def test_q_rounding_unknown_falls_back_half_up():
     # R-5: unrecognized rounding is NOT an error — behaves as half_up (R3)
-    assert quantize_money(Decimal("2.345"), rounding="bogus") == Decimal("2.35")
-    assert quantize_money(Decimal("2.345"), rounding="") == Decimal("2.35")
+    assert quantize_money(Decimal("2.345"), rounding="bogus") == Decimal("2.35")  # type: ignore  # pyright: ignore[reportArgumentType]
+    assert quantize_money(Decimal("2.345"), rounding="") == Decimal("2.35")  # type: ignore  # pyright: ignore[reportArgumentType]
 
 
 def test_q_rounding_default_is_half_up():
@@ -104,7 +105,7 @@ def test_q_rounding_default_is_half_up():
 
 def test_q_integer_input_accepted():
     # Q-6: integer inputs accepted, treated as exact money (§2)
-    assert quantize_money(5) == Decimal("5.00")
+    assert quantize_money(5) == Decimal("5.00")  # type: ignore  # pyright: ignore[reportArgumentType]
 
 
 def test_q_r1_exponent_two_dp():
@@ -122,13 +123,13 @@ def test_q_r1_exponent_two_dp():
 def test_q_invalid_nonnumeric_string_raises_invalidoperation():
     # Q-8: malformed input surfaces as stdlib decimal.InvalidOperation (E3)
     with pytest.raises(InvalidOperation):
-        quantize_money("abc")
+        quantize_money("abc")  # type: ignore  # pyright: ignore[reportArgumentType]
 
 
 def test_q_invalid_nonnumeric_object_raises_typeerror():
     # Q-9: non-numeric object surfaces as stdlib TypeError (E3)
     with pytest.raises(TypeError):
-        quantize_money(object())
+        quantize_money(object())  # type: ignore  # pyright: ignore[reportArgumentType]
 
 
 # ---------------------------------------------------------------------------
@@ -198,7 +199,7 @@ def test_f4_other_fee_type_behaves_flat():
     assert compute_fee(
         taxable_subtotal=Decimal("100.00"),
         enabled=True,
-        fee_type="FIXED",
+        fee_type="FIXED",  # type: ignore  # pyright: ignore[reportArgumentType]
         fee_value=Decimal("7.777"),
     ) == Decimal("7.78")
 
@@ -263,7 +264,7 @@ def _vat(**kw):
         rounding="half_up",
     )
     args.update(kw)
-    return compute_vat(**args)
+    return compute_vat(**args)  # type: ignore  # pyright: ignore[reportArgumentType]
 
 
 def test_v1_enabled_false_zero_regardless():
@@ -531,7 +532,7 @@ def test_t8_breakdown_frozen():
     # C-4: the record is immutable (T8)
     b = _totals(subtotal=Decimal("100"))
     with pytest.raises(dataclasses.FrozenInstanceError):
-        b.total = Decimal("0.00")
+        b.total = Decimal("0.00")  # type: ignore  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def test_t_rounding_propagates_in_totals():
