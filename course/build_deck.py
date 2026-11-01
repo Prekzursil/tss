@@ -293,7 +293,7 @@ def line_chart(s, x, y, w, h, cats, name1, v1, name2, v2, ymin, ymax):
     s2.marker.style = XL_MARKER_STYLE.NONE
     try:
         s2.format.line.dash_style = MSO_LINE_DASH_STYLE.DASH
-    except Exception as exc:  # best-effort styling: dash style unsupported for some theme/chart combos
+    except Exception as exc:  # best-effort styling: dash style is not settable everywhere
         print(f"build_deck: dashed accent line not applied: {exc!r}")
     ca = ch.category_axis
     ca.has_major_gridlines = False
