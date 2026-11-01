@@ -5,13 +5,13 @@
 # test files) resolves under basedpyright --warnings — the gate's bar is zero
 # errors AND zero warnings, and an unresolvable import is a warning. This
 # mirrors exactly what tss-ci installs (ci.yml "Install dependencies") and
-# the pyproject.toml declarations: python-pptx>=1.0 (runtime), pytest>=8 and
+# the pyproject.toml declarations: python-pptx>=1.0 (runtime), pytest>=9.2.0 and
 # pytest-cov>=5 (test extra).
 #
 # The gate's own coverage lane still pins its measuring tools (pytest 9.1.1,
 # pytest-cov 7.1.0, coverage 7.16.2) on top of this file.
 python-pptx>=1.0
-pytest>=8
+pytest>=9.2.0
 pytest-cov>=5
 # Transitive (python-pptx renders through Pillow). Without an explicit floor
 # the resolver satisfies it at python-pptx's declared minimum (9.5.0), which
