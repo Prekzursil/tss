@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "TSS Software Systems Testing: systematic testing lab (EP/BVA/CEG, CFG, MC/DC, mutation) + AmbieGen search-based test generation course project."
 requires-python = ">=3.10"
 dependencies = [
-  "python-pptx>=1.0",
+  "python-pptx>=1.0.2",
 ]
 
 [project.optional-dependencies]
