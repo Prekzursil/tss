@@ -139,8 +139,8 @@ def rect(s, x, y, w, h, fill, line=None, radius=None, shape=MSO_SHAPE.ROUNDED_RE
     if radius is not None and shape == MSO_SHAPE.ROUNDED_RECTANGLE:
         try:
             sp.adjustments[0] = radius
-        except Exception:
-            pass
+        except Exception as exc:  # best-effort styling: some shapes expose no adjustable slot
+            print(f"build_deck: corner radius not applied: {exc!r}")
     return sp
 
 
@@ -293,8 +293,8 @@ def line_chart(s, x, y, w, h, cats, name1, v1, name2, v2, ymin, ymax):
     s2.marker.style = XL_MARKER_STYLE.NONE
     try:
         s2.format.line.dash_style = MSO_LINE_DASH_STYLE.DASH
-    except Exception:
-        pass
+    except Exception as exc:  # best-effort styling: dash style is not settable everywhere
+        print(f"build_deck: dashed accent line not applied: {exc!r}")
     ca = ch.category_axis
     ca.has_major_gridlines = False
     ca.tick_labels.font.size = Pt(10.5)
