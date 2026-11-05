@@ -1,12 +1,12 @@
 [project]
 name = "tss-lab"
 version = "0.1.0"
-description = "Black-box test design lab (EP/BVA/CEG/MC-DC) for the pricing module."
+description = "Black-box test design lab (EP/BVA/CEG/MC-DC/Hypothesis) for the pricing module."
 requires-python = ">=3.10"
 dependencies = []
 
 [project.optional-dependencies]
-test = ["pytest>=8", "pytest-cov>=5"]
+test = ["pytest>=8", "pytest-cov>=5", "hypothesis>=6"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -21,3 +21,4 @@ branch = true
 [tool.coverage.report]
 show_missing = true
 precision = 2
+fail_under = 100
