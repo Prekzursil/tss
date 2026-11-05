@@ -53,7 +53,12 @@ _SLOW_EXAMPLES = 10_000
 settings.register_profile("ci", max_examples=_CI_EXAMPLES, deadline=None)
 settings.register_profile("slow", max_examples=_SLOW_EXAMPLES, deadline=None)
 
-if "--hypothesis-profile" not in sys.argv:  # an explicit CLI profile wins
+# An explicit CLI profile wins, in either option form: "--hypothesis-profile slow"
+# (two argv tokens) or "--hypothesis-profile=slow" (one token).
+_CLI_PROFILE = any(
+    a == "--hypothesis-profile" or a.startswith("--hypothesis-profile=") for a in sys.argv
+)
+if not _CLI_PROFILE:
     settings.load_profile("slow" if os.environ.get("SLOW", "") == "1" else "ci")
 
 
