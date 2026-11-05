@@ -2,7 +2,7 @@
 .SYNOPSIS
     TSS Lab Test & Presentation Runner (PowerShell 7 / Windows PowerShell)
     Systematic Black-Box & Structural Testing of an E-Commerce Pricing Module
-    Author: Andrei Mihai Visalon — FMI, Master IS, 2026-2027
+    Author: Andrei Mihai Visalon - FMI, Master IS, 2026-2027
 
 .DESCRIPTION
     Executes individual test suites, separate per-suite coverage comparison (Req 2),
@@ -105,7 +105,10 @@ for label, paths in suites:
 if cov_json.exists():
     cov_json.unlink()
 '@
-    python -c $pyCode
+    # Feed the snippet on stdin, not as `python -c $pyCode`: Windows PowerShell 5.1
+    # (and PowerShell 7.0-7.2) pass native arguments without escaping embedded double
+    # quotes, so Python received a mangled snippet ("'(' was never closed").
+    $pyCode | python -
     if ($LASTEXITCODE -ne 0) { throw "Coverage comparison failed" }
 }
 
