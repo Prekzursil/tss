@@ -1,7 +1,7 @@
 # EP — Equivalence Partitioning derivation for `pricing`
 
 Technique: **equivalence partitioning (EP)**, derived from
-[`tss/lab/SPEC.md`](../SPEC.md) §3 (input domains), §4–§7 (rule families
+[`SPEC.md`](../SPEC.md) §3 (input domains), §4–§7 (rule families
 R/F/V/T), §8 (error classes), per the §9 EP anchor: *"the partitions of §3
 crossed with rule families F/V/T — one representative per partition per
 rule."*
@@ -133,14 +133,14 @@ decimal places" is additionally pinned by an exponent check
 |---|---|---|---|---|---|
 | C-1 | fee derived from *taxable*, not subtotal | subtotal `200`, discount `150` → taxable `50`, percent `10` | T5 | fee `5.00`, total `55.00` | `test_t5_fee_computed_from_taxable_not_subtotal` |
 | C-2 | full composition identity | sub `200`, disc `50`, ship `20`, fee percent `10`, VAT `10` on (taxable+ship+fee) | T7 | taxable `150`, fee `15.00`, vat `18.50`, **total = 150+20+15+18.50 = `203.50`** | `test_t7_total_identity_full_scenario` |
-| C-3 | record reports all 8 fields | same scenario | T8 | every field asserted (folded into C-2's test) | `test_t7_total_identity_full_scenario` |
+| C-3 | record reports all 7 fields | same scenario | T8 | every field asserted (folded into C-2's test) | `test_t7_total_identity_full_scenario` |
 | C-4 | record immutable | setattr on `PricingBreakdown` | T8 | `dataclasses.FrozenInstanceError` | `test_t8_breakdown_frozen` |
 
 ---
 
 ## 2. Test inventory (52 tests, `tests/test_ep.py`)
 
-`quantize_money` (14): Q-1…Q-9 rows → `test_q_*`.
+`quantize_money` (14): Q-1…Q-9 rows (8 tests; Q-3 via §1.1) + R-1…R-6 (6 tests) → `test_q_*`.
 `compute_fee` (10): E-1, M-2…M-7, T-1…T-3, R-7, R-8 → `test_f*`.
 `compute_vat` (10): E-2, A-1…A-4, M-9…M-11, VR-1…VR-4, R-9 → `test_v*`.
 `compute_totals` (18): E-3, E-4, A-5, M-12…M-23, C-1…C-4, R-10 → `test_t*`.

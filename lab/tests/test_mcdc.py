@@ -1,7 +1,7 @@
 """MC/DC (modified condition/decision coverage) suite for ``pricing``.
 
-Derived from ``tss/lab/docs/mcdc.md`` (the derivation document) against
-``tss/lab/SPEC.md`` §9 and ``tss/lab/pricing.py``. Line citations in the
+Derived from ``docs/mcdc.md`` (the derivation document) against
+``SPEC.md`` §9 and ``pricing.py``. Line citations in the
 docstrings refer to ``pricing.py``.
 
 Each test executes BOTH rows of one minimal MC/DC pair: the target condition

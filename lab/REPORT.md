@@ -3,63 +3,68 @@
 Assembled 2026-10-17 from [`README.md`](README.md), [`AI_USAGE.md`](AI_USAGE.md),
 [`SPEC.md`](SPEC.md) and the derivation docs in [`docs/`](docs/). Module under
 test: [`pricing.py`](pricing.py) — a pure-stdlib (`decimal` + `dataclasses`)
-port of the team's own `momentstudio` production module, behavior-identical
-(README.md:5-11). The specification post-dates the code (spec-after-code
-provenance is stated openly in README.md:13-22 and SPEC.md); all four suites
-are derived from the SPEC, not from the implementation.
+port of the author's own `momentstudio` production module, behavior-identical
+(README.md:33-39). The specification post-dates the code (spec-after-code
+provenance is stated openly in README.md:41-50 and SPEC.md); the EP, BVA and CEG
+suites are derived from the SPEC, not from the implementation (MC/DC, a structural criterion, takes its conditions from the code - docs/mcdc.md).
 
-**Verification re-run at assembly time (this session, 2026-10-17).** Three
-gate commands were re-executed from the workspace root; all three passed:
+**Verification re-run on the final package (2026-11-05).** Three
+gate commands were re-executed from the lab/ folder; all three passed:
 
 | Command (run this session) | Result |
 |---|---|
-| `python -m pytest tss/lab -q --cov=pricing --cov-branch --cov-fail-under=100` | `212 passed in 0.76s`; `pricing.py 57 Stmts, 0 Miss, 22 Branch, 0 BrPart, 100%`; `Required test coverage of 100% reached` |
-| `python tss/lab/docs/gen_cfg.py` | `ALL CHECKS PASSED (0 checks failed)`, exit 0; **69** `PASS` lines (counted via `grep -c "^PASS"`) |
-| `python tss/lab/mutants/run_demo.py` | `DEMO RESULT: ALL CLAIMS MATCH (kill / survive / equivalence demonstrated)`, exit 0 |
+| `python -m pytest -q --cov=pricing --cov-branch --cov-fail-under=100` | `220 passed in 3.48s` (212 example-based + 8 Hypothesis); `pricing.py 57 Stmts, 0 Miss, 22 Branch, 0 BrPart, 100%`; `Required test coverage of 100% reached` |
+| `python docs/gen_cfg.py` | `ALL CHECKS PASSED (0 checks failed)`, exit 0; **69** `PASS` lines (counted via `grep -c "^PASS"`) |
+| `python mutants/run_demo.py` | `DEMO RESULT: ALL CLAIMS MATCH (kill / survive / equivalence demonstrated)`, exit 0 |
 
-Per-suite coverage splits and the mutation-testing runs are cited from their
-docs (protocol and receipts embedded there); they were **not** re-executed at
-assembly time.
+Per-suite coverage splits were re-measured in the same run (`run_lab.sh all`,
+identical figures), and both mutation tools were re-run per suite on
+2026-11-05 (protocol and receipts in docs/mutation-analysis.md).
 
 ---
 
-## Executive summary — tasks 1–7 → artifacts → headline numbers
+## Executive summary — base requirement + points 1–7 → artifacts → headline numbers
 
 | # | Task | Primary artifacts | Headline numbers |
 |---|---|---|---|
-| 1 | Program + requirements | `pricing.py` · `SPEC.md` | 4 public functions + `PricingBreakdown`; 57 statements / 22 branches; SPEC v1: 9 sections, rule families R1–R4, F1–F5, V1–V5, T1–T8, E1–E4 |
+| Base | Program + requirements | `pricing.py` · `SPEC.md` | 4 public functions + `PricingBreakdown`; 57 statements / 22 branches; SPEC v1: 9 sections, rule families R1–R4, F1–F5, V1–V5, T1–T8, E1–E4 |
 | 2 | Coverage measurement & comparison | `docs/coverage-comparison.md` | Per-suite line/branch: EP **100/100%**, BVA **96.49/90.91%**, CEG **98.25/95.45%**, MC/DC **100/100%**; combined **212 tests, 100% line + 100% branch** (gate re-run green this session) |
-| 3 | CFG, V(G), basis paths | `docs/cfg.drawio` · `docs/cfg.svg` · `docs/cfg-analysis.md` · `docs/gen_cfg.py` | 51 nodes, 62 control edges (+11 call edges, excluded from V(G)); V(G) = 1/4/6/8 per function, module V = 62−51+2·4 = **19**; **19-path basis** covering all 62 edges; verifier: **69 machine checks, 0 failures** |
-| 4 | Test-design techniques (EP / BVA / CEG / MC-DC) | `tests/test_ep.py` + `docs/ep.md` · `tests/test_bva.py` + `docs/bva.md` · `tests/test_ceg.py` + `docs/ceg.md` · `tests/test_mcdc.py` + `docs/mcdc.md` | **52 / 129 / 17 / 14 tests** (Σ 212, all green); EP: full partition tables w/ traceability; BVA: boundaries B1–B20, 3- and 5-point neighbor sets; CEG: 12 causes + 2 derived, 10 effects, 17 feasible columns (8 impossible combos struck); MC/DC: 15 conditions, 14 minimal pairs, 1 unreachable (C15) |
+| 3 | CFG, V(G), basis paths | `docs/cfg.drawio` · `docs/cfg.svg` · `docs/cfg-analysis.md` · `docs/gen_cfg.py` | 51 nodes, 62 control edges (+11 call edges, excluded from V(G)); V(G) = 1/4/6/8 per function, module V = 62−51+2·4 = **19**; **19-path basis** covering all 62 edges (= 19 linearly independent circuits once each path is closed by its EXIT→ENTER return edge, cfg-analysis.md §4.1); verifier: **69 machine checks, 0 failures** |
+| 1 + 4 | Test-design techniques: EP / BVA / CEG (point 1) + MC/DC (point 4) | `tests/test_ep.py` + `docs/ep.md` · `tests/test_bva.py` + `docs/bva.md` · `tests/test_ceg.py` + `docs/ceg.md` · `tests/test_mcdc.py` + `docs/mcdc.md` | **52 / 129 / 17 / 14 tests** (Σ 212, all green); EP: full partition tables w/ traceability; BVA: boundaries B1–B20, 3- and 5-point neighbor sets; CEG: 12 causes + 2 derived, 10 effects, 17 feasible columns (8 impossible combos struck); MC/DC: 15 conditions, 14 minimal pairs, 1 unreachable (C15) |
 | 5–6 | Hand mutants: killed / surviving / equivalent + demo | `mutants/mutant_{equivalent,killed,surviving}.py` · `mutants/run_demo.py` · `docs/mutants-manual.md` | 3 order-1 mutants — **EQUIVALENT** (L148 `<`→`<=`, proven), **KILLED** (L59 `==`→`!=`, by chosen test), **SURVIVING** (L57 `<=0`→`<=4`, survives chosen test, dies to full suite); demo: `ALL CLAIMS MATCH` (re-run green this session) |
 | 7 | Mutation testing, two tools, analysis | `docs/mutation-analysis.md` | mutmut 3.8.0 (**176** mutants): EP 75.57% · BVA 77.84% · CEG 66.48% · MC/DC 61.36%; cosmic-ray 8.7.0 (**226** mutants): EP 82.30% · BVA 88.05% · CEG 80.97% · MC/DC 81.42%; `pricing.py` md5 unchanged across all 8 runs |
 
 AI assistance for every deliverable is itemized per the required
 tool/purpose/prompt/result/edits/validation format in [`AI_USAGE.md`](AI_USAGE.md)
-(11 logged uses, incl. the round-1 critic fix pass, AI_USAGE.md:24-143). The
-per-member contribution declaration in README.md:113-131 is a placeholder
-(`FILL IN BEFORE SUBMISSION`) — team-owned, intentionally not filled here.
+(13 logged uses, including Phase 7 Hypothesis property-based testing and the 2026-11-05 audit). This is
+an individual submission by **Andrei Mihai Visalon** (100 % contribution across
+all points 1–7, declared in [`README.md`](README.md)). In addition to the 212
+example-based tests for Tasks 1–7, Phase 7 adds 8 Hypothesis property tests in
+[`tests/test_properties.py`](tests/test_properties.py) (220 total lab tests,
+100.00 % line and branch coverage).
 
 ---
 
-## Task 1 — Program + requirements
+## Base requirement — Program + requirements
 
 - **Program**: `pricing.py` — the whole module declared as analysis scope:
   `quantize_money`, `compute_fee`, `compute_vat`, `compute_totals` plus the
-  frozen `PricingBreakdown` record (README.md:5-8). Size: **57 statements,
-  22 branch destinations** (README.md:83-84; confirmed live by this session's
-  coverage run: `57 Stmts / 22 Branch`). Port of the team's own
+  frozen `PricingBreakdown` record (README.md:33-37). Size: **57 statements,
+  22 branch destinations** (README.md:139; confirmed live by this session's
+  coverage run: `57 Stmts / 22 Branch`). Port of the author's own
   `momentstudio/backend/app/services/pricing.py`, fetched 2026-10-16,
-  behavior-identical, stdlib-only (README.md:9-11).
+  behavior-identical, stdlib-only (README.md:36-39).
 - **Requirements**: `SPEC.md` v1 — black-box only (no implementation detail);
   **9 sections, rules R1–R4 (quantization/rounding), F1–F5 (fee), V1–V5 (VAT),
   T1–T8 (totals), E1–E4 (errors)** (AI_USAGE.md:42). Every SPEC rule is
-  exercised by at least one suite test; the 100%-branch combined run is the
-  machine check that the rules cover all reachable behavior (AI_USAGE.md:44).
-- **Provenance, stated plainly**: the program pre-dates the lab (team's own
+  exercised by at least one suite test, and EP alone (derived from the SPEC)
+  already reaches 100 % line and branch coverage, so SPEC-derived inputs reach
+  every reachable branch; coverage cannot show that the rules are *correct*.
+- **Provenance, stated plainly**: the program pre-dates the lab (author's own
   code), so the SPEC was derived from the module's observed behavior, not
   written before it; the README relies on transparent provenance + black-box
-  spec character + suites derived from SPEC rather than code (README.md:13-22).
+  spec character + EP/BVA/CEG suites derived from SPEC rather than code, MC/DC
+  taking its conditions from the code (README.md:41-50).
 
 ## Task 2 — Coverage measurement and comparison
 
@@ -117,23 +122,24 @@ draw.io XML, 130 mxCells per AI_USAGE.md:97), `docs/cfg.svg` (rendered),
   62 control edges** (2/2, 11/11, 18/18, 31/31); GF(2) rank of the
   path×edge incidence matrix equals V(G); 18 of the paths were additionally
   executed under `sys.settrace` and matched their documented node sequences
-  (cfg-analysis.md:203-211). 60 of 62 edges are reachable by executable
+  (cfg-analysis.md:217-225). 60 of 62 edges are reachable by executable
   inputs; the 2 edges of the defensive guard (E58/E60, `total < 0`) are
   unreachable — a 5400-combination exhaustive sweep never yields a negative
-  total — so basis path T-P8 is structural only (cfg-analysis.md:263-266;
+  total — so basis path T-P8 is structural only (cfg-analysis.md:277-280;
   verifier output this session: `PASS infeasibility: … sweep … never yields
   total < 0`).
 - **Machine verification (re-run this session)**: `python
-  tss/lab/docs/gen_cfg.py` re-parses the written `cfg.drawio`, recounts E/N
+  docs/gen_cfg.py` re-parses the written `cfg.drawio`, recounts E/N
   per band, cross-checks V(G) against an AST decision count, verifies basis
   validity/edge coverage/GF(2) rank and the traced paths → **69 PASS lines
   (counted), `ALL CHECKS PASSED (0 checks failed)`, exit 0**.
 
-## Task 4 — Test-design techniques: EP, BVA, CEG, MC/DC
+## Points 1 and 4 — Test-design techniques: EP, BVA, CEG (point 1) and MC/DC (point 4)
 
-All four suites derive from `SPEC.md` (not the code), use exact `Decimal`
-equality assertions, and pin SPEC R1's two-decimal shape via
-`as_tuple().exponent == -2`. Combined: **212 tests, all green** (re-run this
+The EP, BVA and CEG suites derive from `SPEC.md` (not the code); MC/DC takes
+its conditions from the code (docs/mcdc.md). All four use exact `Decimal` equality
+assertions; EP and BVA also pin SPEC R1's two-decimal shape via
+`as_tuple().exponent == -2` (CEG and MC/DC compare values only). Combined: **212 tests, all green** (re-run this
 session), **100% line + branch** combined.
 
 ### 4.1 Equivalence partitioning — `tests/test_ep.py` (52 tests) + `docs/ep.md`
@@ -152,13 +158,16 @@ session), **100% line + branch** combined.
 ### 4.2 Boundary value analysis — `tests/test_bva.py` (129 tests) + `docs/bva.md`
 - Domain has no finite upper bound, so the classic 5-point pattern is applied
   where meaningful: 3-point sets {B−, B, B+} at clamp/sign boundaries (step
-  0.001 / 0.01 / 1) and 5-point tie sets {x.xx4, x.xx49, x.xx5, x.xx51,
-  x.xx6} at cent ties; cent-quantum boundary {0.004, 0.005, 0.006}
-  (bva.md:11-33).
+  0.001 / 0.01 / 1) a 5-point tie set {x.xx4, x.xx49, x.xx5, x.xx51,
+  x.xx6} at the primary cent tie (B1) and 3-point {x.xx4, x.xx5, x.xx6} sets at
+  the derived ties (B2, B9, B10, B13); cent-quantum boundary {0.004, 0.005, 0.006}
+  (bva.md:11-35).
 - Boundary inventory **B1–B20**: per-rounding-mode tie tables (B1–B4,
   positive/negative mirrors, half_even even/odd pairs, smallest surviving
-  cent), 2-dp shape + idempotency over six representatives (B5), and clamp /
-  switch-point boundaries through `compute_totals` (B6–B20, e.g. B17 subtotal
+  cent), 2-dp shape + idempotency over six representatives (B5), the unrecognized-mode fallback
+  at the tie (B6), `compute_fee` clamp and tie boundaries (B7–B10),
+  `compute_vat` rate, base and tie boundaries (B11–B13), and clamp /
+  switch-point boundaries through `compute_totals` (B14–B20, e.g. B17 subtotal
   sign boundary, B19 override-vs-computed switch points, B20 minimal-sum
   totals).
 - Coverage: 129 tests → 96.49% line / 90.91% branch — the weakest suite, by
@@ -169,7 +178,7 @@ session), **100% line + branch** combined.
 - **12 SPEC causes (C1–C12) + 2 derived sign conditions (X1, X2)**, **10
   effects (E1–E10)** incl. the total-identity invariant E10 asserted in every
   test; boolean equations for the graph in ceg.md §3.1, diagram in §3.2.
-- Constraints: **8 impossible combinations explicitly struck** (ceg.md:175-203),
+- Constraints: **8 impossible combinations explicitly struck** (ceg.md:176-205),
   e.g. `¬C4 ∧ (E5/E6)` (disabled VAT ignores override), `¬X2 ∧ E9` (floor is
   definitionally tied to X2).
 - Restricted-entry decision table: **17 feasible columns → exactly 17 tests**
@@ -208,7 +217,7 @@ Three order-1 mutants, each exactly one line changed from `pricing.py`
 | Killed | `mutants/mutant_killed.py` | 59 (C3) | `== "percent"` → `!= "percent"` (relational `==`→`!=`) | **KILLED by the chosen test**; non-equivalence witnessed in-process (`original=10.00 mutant=5.00`) |
 | Surviving | `mutants/mutant_surviving.py` | 57 (C2) | `fee_value <= 0` → `fee_value <= 4` (boundary constant shift) | **SURVIVES the chosen test, KILLED by the full suite**; non-equivalence witnessed (`original=2.00 mutant=0.00` for flat fee 2 ∈ (0,4]) |
 
-**Demonstration (re-run this session)**: `python tss/lab/mutants/run_demo.py`
+**Demonstration (re-run this session)**: `python mutants/run_demo.py`
 runs the chosen MC/DC test case and the full suite against each mutant in
 isolated sandboxes and checks every verdict against the documented claims —
 output tail: `DEMO RESULT: ALL CLAIMS MATCH (kill / survive / equivalence
@@ -221,7 +230,7 @@ Source: `docs/mutation-analysis.md` (environment/protocol lines 5-83, results
 lines 85-106, analysis lines 108-148). Score convention: **killed /
 (killed + survived)**; zero timeouts/suspicious/skipped in every run; every
 run on scratch copies with `pricing.py` md5 `6d716bcc5d258808c8b2ec98aaf550d9`
-verified unchanged before/after (mutation-analysis.md:28, 79-80, 251).
+verified unchanged before/after (mutation-analysis.md:28, 79-80, 271).
 
 - **Tools**: mutmut 3.8.0 (refuses native Windows — `os.fork()` — so run in
   WSL Ubuntu, Python 3.12.3, fresh venv; install hurdle documented) and
@@ -240,28 +249,28 @@ verified unchanged before/after (mutation-analysis.md:28, 79-80, 251).
 | cosmic-ray 8.7.0 | CEG | 183 | 43 | 226 | **80.97 %** |
 | cosmic-ray 8.7.0 | MC/DC | 184 | 42 | 226 | **81.42 %** |
 
-- **Findings** (mutation-analysis.md:108-148): BVA is the best suite under
+- **Findings** (mutation-analysis.md:117-159): BVA is the best suite under
   both tools (its sub-cent probes kill comparison-operator mutants); EP
   second; CEG and MC/DC trail with their order flipping between tools — a
   tool-operator effect, not test quality: MC/DC's minimal pairs hold other
   conditions fixed, so mutants that only misbehave under non-neutral settings
   survive mutmut, while cosmic-ray cannot generate string/default mutants at
-  all. Absolute cosmic-ray scores run ~5–20 points higher partly because its
+  all. Absolute cosmic-ray scores run ~7–20 points higher partly because its
   extra 50 mutants include gross ones (e.g. type-annotation `BitOr → *`).
 - The hand-proven equivalent mutant of tasks 5–6 is the analytic anchor for
   reading these survivor lists: equivalence must be proven, not assumed
-  (mutants-manual.md:124-126).
+  (mutants-manual.md:126-129).
 
 ---
 
 ## Reproduction
 
 ```bat
-cd <workspace root>
-python -m pytest tss/lab -q                                                 :: 212 passed (re-run 2026-10-17)
-python -m pytest tss/lab -q --cov=pricing --cov-branch --cov-fail-under=100 :: 100%, exit 0 (re-run 2026-10-17)
-python tss\lab\docs\gen_cfg.py                                              :: 69 PASS lines, exit 0 (re-run 2026-10-17)
-python tss\lab\mutants\run_demo.py                                          :: ALL CLAIMS MATCH, exit 0 (re-run 2026-10-17)
+cd lab
+python -m pytest -q                                                 :: 220 passed (re-run 2026-11-05)
+python -m pytest -q --cov=pricing --cov-branch --cov-fail-under=100 :: 100%, exit 0 (re-run 2026-11-05)
+python docs\gen_cfg.py                                              :: 69 PASS lines, exit 0 (re-run 2026-11-05)
+python mutants\run_demo.py                                          :: ALL CLAIMS MATCH, exit 0 (re-run 2026-11-05)
 ```
 
 Per-suite coverage protocol (fresh process per suite) and the mutmut /

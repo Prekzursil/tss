@@ -9,20 +9,20 @@ the terminal report's single "Cover" column blends statements and branches.
 
 ## Measurement protocol
 
-All commands run from the workspace root (`C:\Users\Prekzursil\.zcode\workspace\default`),
-one fresh invocation per suite:
+All commands run from the lab/ folder, one fresh invocation per suite
+(`--cov-fail-under=0` turns off pyproject's 100% gate for these single-suite runs):
 
 ```
-python -m pytest tss/lab/tests/test_ep.py   -q --cov=pricing --cov-branch --cov-report=term-missing --cov-report=json
-python -m pytest tss/lab/tests/test_bva.py  -q --cov=pricing --cov-branch --cov-report=term-missing --cov-report=json
-python -m pytest tss/lab/tests/test_ceg.py  -q --cov=pricing --cov-branch --cov-report=term-missing --cov-report=json
-python -m pytest tss/lab/tests/test_mcdc.py -q --cov=pricing --cov-branch --cov-report=term-missing --cov-report=json
-python -m pytest tss/lab/tests/test_ep.py tss/lab/tests/test_bva.py tss/lab/tests/test_ceg.py tss/lab/tests/test_mcdc.py \
+python -m pytest tests/test_ep.py   -q --cov=pricing --cov-branch --cov-report=term-missing --cov-report=json --cov-fail-under=0
+python -m pytest tests/test_bva.py  -q --cov=pricing --cov-branch --cov-report=term-missing --cov-report=json --cov-fail-under=0
+python -m pytest tests/test_ceg.py  -q --cov=pricing --cov-branch --cov-report=term-missing --cov-report=json --cov-fail-under=0
+python -m pytest tests/test_mcdc.py -q --cov=pricing --cov-branch --cov-report=term-missing --cov-report=json --cov-fail-under=0
+python -m pytest tests/test_ep.py tests/test_bva.py tests/test_ceg.py tests/test_mcdc.py \
               -q --cov=pricing --cov-branch --cov-report=term-missing --cov-report=json
 ```
 
 Environment: Python 3.14.6, pytest 8.4.2, pytest-cov 7.1.0, coverage 7.15.2
-(Windows). Measured module: `tss/lab/pricing.py` — 57 statements, 22 branch
+(Windows). Measured module: `pricing.py` — 57 statements, 22 branch
 destinations. The **only** exclusion is the defensive guard
 `if total < 0:  # pragma: no cover` at `pricing.py:148-149`; the combined
 JSON run reports `excluded_lines: [148, 149]` and no `.coveragerc`/`setup.cfg`
@@ -118,8 +118,8 @@ single-condition decision (`if` chains, not compound booleans), a complete
 MC/DC pair set *is* exactly a complete branch-arc set — each condition's
 True/False arcs both get taken, which subsumes condition coverage and branch
 coverage. The two arcs BVA missed are MC/DC pairs P4
-(`test_mcdc_c04_compute_vat_not_enabled`, `test_mcdc.py:84`) and P7
-(`test_mcdc_c07_compute_vat_apply_fee`, `test_mcdc.py:168`) — precisely
+(`test_mcdc_c04_compute_vat_not_enabled`, `test_mcdc.py:85`) and P7
+(`test_mcdc_c07_compute_vat_apply_fee`, `test_mcdc.py:169`) — precisely
 because *condition independence* is what MC/DC exists to demonstrate: each
 boolean input must be shown to independently change its decision's outcome,
 so no gate can stay untested. The unreachable condition C15
@@ -128,9 +128,9 @@ so no gate can stay untested. The unreachable condition C15
 
 **Union.** The per-suite gaps (BVA's two, CEG's one) are all the *same* two
 lines, both inside `compute_vat`, and both are covered by EP
-(`test_v1_enabled_false_zero_regardless` at `test_ep.py:303` calls
+(`test_v1_enabled_false_zero_regardless` at `test_ep.py:270` calls
 `compute_vat(enabled=False)` directly; `test_v3_apply_fee_only`/
-`test_v3_apply_both` at `test_ep.py:331-338` set `apply_to_fee=True`) and by
+`test_v3_apply_both` at `test_ep.py:303-305` set `apply_to_fee=True`) and by
 MC/DC (pairs P4 and P7). Hence the union closes to 100%/100% with no additions
 needed; in fact the EP ∪ MC/DC union alone already achieves it.
 
