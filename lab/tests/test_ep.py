@@ -5,7 +5,7 @@ where the SPEC explicitly declares two sign classes identical — F2, T2, T4,
 T6 — to evidence the merge). Expected values are computed from the SPEC rules
 (R1-R4, F1-F5, V1-V5, T1-T8, E3), not from the implementation.
 
-Derivation table: tss/lab/docs/ep.md.
+Derivation table: docs/ep.md.
 
 Scope discipline: EP only. No boundary ±ε sweeps (BVA), no boolean
 decision-table combinations (CEG), no condition-isolation pairs (MC/DC).
@@ -504,7 +504,7 @@ def test_t6_none_override_computed_with_apply_flags():
 
 def test_t7_total_identity_full_scenario():
     # C-2/C-3: full composition — total = taxable + shipping + fee + vat (T7)
-    # and all 8 fields reported (T8): taxable 150, fee 150*10% = 15.00,
+    # and all 7 fields reported (T8): taxable 150, fee 150*10% = 15.00,
     # vat (150+20+15)*10% = 18.50, total 203.50
     b = _totals(
         subtotal=Decimal("200"),

@@ -1,8 +1,8 @@
-# BVA — Boundary Value Analysis derivation for `tss/lab/pricing.py`
+# BVA — Boundary Value Analysis derivation for `pricing.py`
 
-Suite: `tss/lab/tests/test_bva.py` · Technique: BVA only (per SPEC.md §9 BVA anchor).
-Module under test: `tss/lab/pricing.py` (frozen; black-box, spec-driven).
-Source of truth: `tss/lab/SPEC.md` (requirements baseline v1, 2026-10-16).
+Suite: `tests/test_bva.py` · Technique: BVA only (per SPEC.md §9 BVA anchor).
+Module under test: `pricing.py` (frozen; black-box, spec-driven).
+Source of truth: `SPEC.md` (requirements baseline v1, 2026-10-16).
 
 All inputs and expected outputs below are exact `Decimal` values. Every assertion
 in the suite is exact `Decimal` equality (numeric `==`); two-decimal-place shape
@@ -26,8 +26,11 @@ For each boundary point `B` we test the 3-point neighbor set
 - For clamp boundaries: sub-cent neighbors `B ± 0.001` (and `± 0.01`, `± 1`
   where sign behavior, not sub-cent behavior, is the subject).
 - For tie boundaries: the 5-point analog `{x.xx4, x.xx49, x.xx5, x.xx51, x.xx6}`
-  — i.e. one cent below, a fine sub-tie step below, the tie itself, a fine
-  step above, one cent above — which fills the min/min+/nom/max−/max roles.
+  — i.e. one third-decimal step (0.001) below, a fine sub-tie step (0.0001)
+  below, the tie itself, a fine step above, one third-decimal step above —
+  which fills the min/min+/nom/max−/max roles. The full 5-point set is used for
+  the primary tie (B1); the derived ties (B2, B9, B10, B13) use the 3-point
+  subset `{x.xx4, x.xx5, x.xx6}`.
 - For the cent quantum: `{0.004, 0.005, 0.006}` around the smallest surviving
   cent `0.01`.
 
@@ -150,7 +153,7 @@ Rate 100 (vat = base), `taxable_subtotal = 100`, `apply_to_shipping = True`:
 | −100.001 | −0.001 | 0.00 |
 | −100.00 | 0 | 0.00 |
 | −99.999 | 0.001 | 0.00 (0.001 → 0.00) |
-| −99.99 | 0.01 | **0.01** (smallest surviving positive base) |
+| −99.99 | 0.01 | **0.01** (first surviving base among these points; under half_up any base ≥ 0.005 already yields 0.01, cf. B4) |
 
 Direct base boundary (no shipping/fee): taxable −0.01 / 0 / 0.01 →
 0.00 / 0.00 / 0.01.
@@ -172,7 +175,7 @@ Direct base boundary (no shipping/fee): taxable −0.01 / 0 / 0.01 →
 | discount | reported discount | taxable | total |
 |---|---|---|---|
 | −0.01 / −0.001 | 0.00 | 100.00 | 100.00 |
-| 0 / 0.00 | 0.00 | 100.00 | 100.00 |
+| 0 | 0.00 | 100.00 | 100.00 |
 | 0.001 | 0.00 | 100.00 | 100.00 |
 | 0.004 | 0.00 | 100.00 | 100.00 |
 | 0.005 | **0.01** (half_up) | 99.99 | 99.99 |

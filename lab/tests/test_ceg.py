@@ -4,7 +4,7 @@ Derived exclusively from ``SPEC.md`` §9 (CEG anchor) together with the fee
 rules §5 (F1–F5), VAT rules §6 (V1–V5) and totals composition §7 (T1–T8).
 The full derivation — causes, effects, the boolean graph, the struck-out
 impossible combinations and the restricted-entry decision table — lives in
-``tss/lab/docs/ceg.md``.
+``docs/ceg.md``.
 
 One test below = one feasible column of that decision table (columns 1–17);
 combinations struck out as impossible in the derivation get no test.

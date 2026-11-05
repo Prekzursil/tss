@@ -9,7 +9,7 @@ test in [`../tests/test_ceg.py`](../tests/test_ceg.py).
 
 Derivation source: `SPEC.md` §9 (CEG anchor), §5 (F1–F5 fee rules), §6
 (V1–V5 VAT rules), §7 (T1–T8 totals composition). The module under test is
-`tss/lab/pricing.py` (`compute_fee` pricing.py:47, `compute_vat`
+`pricing.py` (`compute_fee` pricing.py:47, `compute_vat`
 pricing.py:66, `compute_totals` pricing.py:91). All observation is done
 through `compute_totals` because that is the only callable through which all
 four target decision outcomes are jointly observable; the graph itself is
@@ -23,7 +23,7 @@ The four decision outcomes the task names, and where each lives:
 | fee applied or 0 | F1–F5, T5 | C1,C2,C3 → I1 → E1–E3 |
 | VAT base composition | V3, T6 (else-arm) | C6,C7,C12,I1 → I4 (base), C8 |
 | VAT 0 vs override vs computed | V1,V2,V4,V5, T6 | C4,C5,C8,C9,C10 → E4–E8 |
-| totals clamping | T1–T4, T7 | X1,C11 → I3 → E9; identity E10 |
+| totals clamping | T1–T4, T7 | X1,C11 → X2 → E9; identity E10 |
 
 ---
 
@@ -64,7 +64,7 @@ a zero discount together with a negative subtotal **does** — see column 17).
 | E6 | vat = quantized override | `C4 ∧ C9 ∧ C10` (T6 arm 2, positive override; rate/flags ignored) |
 | E7 | `vat == 0.00` from computed rules | `C4 ∧ ¬C9 ∧ (¬C5 ∨ ¬C8)` (V2 or V4) |
 | E8 | vat = quantized `base × rate / 100` | `C4 ∧ ¬C9 ∧ C5 ∧ C8` (V5) |
-| E9 | `taxable_subtotal == 0.00` (floored) | `X2` (T3) |
+| E9 | taxable floored by T3 (`subtotal_q − discount_eff < 0`, so `taxable_subtotal` reports `0.00`) | `X2` (T3) |
 | E10 | total identity: `total = taxable + shipping + fee + vat`, `total ≥ 0` | holds in **every** column (T7) — asserted as an invariant in every test |
 
 ## 3. The cause–effect graph
@@ -139,15 +139,15 @@ flowchart TD
     C9 --> GO
     NC10((NOT)) --> E5[E5 vat = 0.00 override clamped]
     GO --> E5
-    C10 --> E5
+    C10 --> NC10
     GO --> E6[E6 vat = override]
     C10 --> E6
     C4 --> GC((AND))
     NC9((NOT)) --> GC
     C9 --> NC9
-    NC5((NOT)) --> V0{OR}
+    NC5((NOT))
     C5 --> NC5
-    NC8((NOT)) --> V0
+    NC8((NOT))
     C8 --> NC8
     GC --> E7a[E7 vat = 0.00 rate ≤ 0]
     NC5 --> E7a
@@ -169,6 +169,7 @@ flowchart TD
     E5 --> TOT
     E6 --> TOT
     E7a --> TOT
+    E7b --> TOT
     E8 --> TOT
 ```
 
@@ -207,7 +208,7 @@ Fee cluster note: the raw 2³ combinations of (C1, C2, C3) are **all
 feasible** — nothing is struck there; they merge into 4 rules via don't-cares
 (columns 1–4). Base-composition cluster (C6, C7, C12, fee>0): 2⁴ = 16 raw
 combinations, all feasible, merged into the 4 composition patterns plus the
-two "flag set but summand zero" patterns (columns 5–9).
+two "flag set but summand zero" patterns (columns 1, 5–9).
 
 ---
 
@@ -227,7 +228,7 @@ subtotal `100.00`, discount `0`, shipping `10.00`, flat fee `5.00`, VAT rate
 |----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
 | 1  | T | T | F | T | T | T | T | T | F | — | F | T | F | F | 5.00 (E2) | 11.50 (E8) | 100.00 | 10.00 | 126.50 | `test_col_01_fee_flat_applied` |
 | 2  | T | T | T | T | T | T | T | T | F | — | F | T | F | F | 7.00 (E3) | 11.70 (E8) | 100.00 | 10.00 | 128.70 | `test_col_02_fee_percent_applied` |
-| 3  | F | T | — | T | T | T | T | T | F | — | F | T | F | F | 0.00 (E1) | 11.00 (E8) | 100.00 | 10.00 | 121.00 | `test_col_03_fee_zero_when_disabled` |
+| 3  | F | — | — | T | T | T | T | T | F | — | F | T | F | F | 0.00 (E1) | 11.00 (E8) | 100.00 | 10.00 | 121.00 | `test_col_03_fee_zero_when_disabled` |
 | 4  | T | F | — | T | T | T | T | T | F | — | F | T | F | F | 0.00 (E1) | 11.00 (E8) | 100.00 | 10.00 | 121.00 | `test_col_04_fee_zero_when_value_nonpositive` |
 | 5  | T | T | F | T | T | F | F | T | F | — | F | T | F | F | 5.00 | 10.00 (base=taxable) | 100.00 | 10.00 | 125.00 | `test_col_05_vat_base_taxable_only` |
 | 6  | T | T | F | T | T | T | F | T | F | — | F | T | F | F | 5.00 | 11.00 (base=+shp) | 100.00 | 10.00 | 126.00 | `test_col_06_vat_base_plus_shipping` |
@@ -254,7 +255,7 @@ Concrete input vectors (deviations from the reference frame only):
 | 5 | `vat_apply_to_shipping=False`, `vat_apply_to_fee=False` |
 | 6 | `vat_apply_to_fee=False` |
 | 7 | `vat_apply_to_shipping=False` |
-| 8 | `shipping=-10.00` |
+| 8 | `shipping=-10.00`, `vat_apply_to_fee=False` |
 | 9 | `fee_value=0.00`, `vat_apply_to_shipping=False` |
 | 10 | `vat_enabled=False`, `vat_override=99.99` |
 | 11 | `vat_override=8.75` |
@@ -273,8 +274,8 @@ Column provenance (which decision outcome each column exercises):
   column 1 is the both-flags composition).
 - **VAT 0 vs override vs computed**: columns 10 (E4), 11 (E6), 12 (E5),
   13 (E7-rate), 14 (E7-base); the computed arm E8 is represented by columns
-  1, 2, 5–9, 15–17.
-- **totals clamping**: columns 8 (shipping ≤ 0 → 0.00), 14 (discount ≥
+  1–9, 15–17.
+- **totals clamping**: columns 8 (shipping ≤ 0 → 0.00), 14 (discount >
   subtotal floors taxable; percent fee follows the floored taxable), 15
   (discount ≤ 0 reports 0.00), 16 (positive discount reduces taxable), 17
   (negative subtotal reported as-is yet total stays ≥ 0); E10 identity is

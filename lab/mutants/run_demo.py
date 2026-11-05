@@ -14,7 +14,7 @@ each in an isolated sandbox where the mutant file is installed as
 ``pricing.py`` (the tests import ``pricing`` via tests/conftest.py), and then
 
 3. prints KILLED / SURVIVED / EQUIVALENT verdict lines and checks them
-   against the claims made in ``tss/lab/docs/mutants-manual.md``:
+   against the claims made in ``docs/mutants-manual.md``:
 
    - mutant_equivalent  -> EQUIVALENT (survives every possible test; proof in
      docs/mutants-manual.md). Also probed in-process on the only input state
@@ -29,7 +29,7 @@ shown side by side).
 
 Exit code 0 iff every printed verdict matches the claim.
 
-Usage:  python tss/lab/mutants/run_demo.py
+Usage:  python mutants/run_demo.py
 """
 
 from __future__ import annotations
@@ -162,7 +162,7 @@ def _make_sandbox(mutant: str) -> Path:
     sandbox = Path(tempfile.mkdtemp(prefix=f"tss_mutant_demo_{mutant}_"))
     shutil.copy2(MUTANTS_DIR / f"{mutant}.py", sandbox / "pricing.py")
     shutil.copytree(TESTS_DIR, sandbox / "tests",
-                    ignore=shutil.ignore_patterns("__pycache__"))
+                    ignore=shutil.ignore_patterns("__pycache__", "test_properties.py"))
     return sandbox
 
 
