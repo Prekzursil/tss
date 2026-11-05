@@ -1,4 +1,4 @@
-# MC/DC derivation — `tss/lab/pricing.py`
+# MC/DC derivation — `pricing.py`
 
 Technique: **Modified Condition/Decision Coverage**. For every condition `C`
 in every decision `D` of the module, exhibit a *pair* of executions in which
@@ -7,11 +7,11 @@ in every decision `D` of the module, exhibit a *pair* of executions in which
 2. every other condition that feeds the same decision holds the same outcome,
 3. the decision's outcome (and hence an observable output) changes.
 
-Sources read for this derivation: `tss/lab/SPEC.md` (§9 MC/DC anchor) and
-`tss/lab/pricing.py` (line numbers cited below refer to that file, read
+Sources read for this derivation: `SPEC.md` (§9 MC/DC anchor) and
+`pricing.py` (line numbers cited below refer to that file, read
 2026-10-16). The module is frozen; all expected values below were hand-derived
 from the code paths and asserted as exact `Decimal`s in
-`tss/lab/tests/test_mcdc.py`.
+`tests/test_mcdc.py`.
 
 `quantize_money` contains **no conditions** (the rounding-mode fallback at
 pricing.py:32 is a branch-free `dict.get`), and `PricingBreakdown` is a plain
@@ -50,8 +50,8 @@ distinct conditions feeding distinct decisions and get distinct pairs.
 
 ## 2. Truth tables and chosen pairs
 
-For the single-condition decisions (all of the module's `if`s except the T6
-selector), "all other conditions fixed" is realized by fixing every *upstream*
+Every decision in `pricing.py` is a single condition (the module has no
+`and`/`or`; the T6 selector is an `if`/`elif` chain of two such decisions), so "all other conditions fixed" is realized by fixing every *upstream*
 guard that could mask the outcome (e.g. to expose C2 the pair keeps
 `enabled=True`; to expose C8 it keeps `enabled=True` and `rate>0`).
 
@@ -88,8 +88,8 @@ chosen so the two arms give clearly different amounts).
 | a   | `"percent"` | **T** | percent arm         | `200·5/100 = 10.00`                |
 | b   | `"flat"`    | **F** | flat arm            | `5.00`                             |
 
-**Pair P3 = (a, b).** (C3 is a module condition beyond the enumerated list in
-the task statement but is required by "every condition in the module".)
+**Pair P3 = (a, b).** (C3 is included, like every other condition, because MC/DC requires
+every condition of every decision in the module.)
 
 ### C4 — `not enabled` in `compute_vat` (pricing.py:77)
 
@@ -190,7 +190,7 @@ Held fixed: `subtotal=100`, `discount=0`, fee/VAT disabled.
 
 ### C12/C13 — the 3-way VAT selector in `compute_totals` (pricing.py:124-126)
 
-Compound decision (SPEC T6): arm 1 `not vat_enabled` → vat `0.00`; arm 2
+Multi-way selector (SPEC T6; in the code an `if`/`elif` chain of two single-condition decisions at lines 124 and 126): arm 1 `not vat_enabled` → vat `0.00`; arm 2
 `vat_override is not None` → clamp(override); arm 3 `else` → `compute_vat`.
 Let **E** = `vat_enabled`, **O** = (`vat_override is not None`).
 
@@ -290,11 +290,11 @@ dishonest); the code is frozen so the guard cannot be removed.
 
 ## 5. Run receipt
 
-Command (from the workspace root):
+Command (from the lab/ folder):
 
 ```
-python -m pytest tss/lab/tests/test_mcdc.py -q
+python -m pytest tests/test_mcdc.py -q
 ```
 
-Expected/actual: 14 passed, exit 0 (see `receipts` in the submitted result for
-the exact output lines).
+Expected/actual: `14 passed`, exit 0 (re-run 2026-11-05 on the final package;
+with `--cov=pricing --cov-branch` the suite alone reports 100 % line and branch).

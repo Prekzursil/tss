@@ -2,7 +2,7 @@
 
 Task 7 of the TSS lab. The four black-box suites (EP, BVA, CEG, MC/DC —
 tasks 1–4 test-design sets) were each run **separately** against machine-generated
-mutants of `tss/lab/pricing.py`, with **two** mutation-testing tools:
+mutants of `pricing.py`, with **two** mutation-testing tools:
 
 - **mutmut 3.8.0** — pre-installed on Windows, but mutmut 3.x refuses to run
   natively on Windows (`mutmut --version` → *"To run mutmut on Windows, please
@@ -24,7 +24,7 @@ count for each tool.
 
 ## Measurement protocol
 
-Both tools ran on **copies** — `tss/lab/pricing.py` itself is untouched
+Both tools ran on **copies** — `pricing.py` itself is untouched
 (verified: md5 `6d716bcc5d258808c8b2ec98aaf550d9` before and after every run).
 
 **mutmut 3.8.0** (WSL, scratch tree `~/mutmut-lab/<suite>/` per suite):
@@ -82,6 +82,18 @@ original (cosmic-ray restores the file after each mutant).
 Clean-suite sanity per scratch dir (before any mutation): EP 52 passed,
 BVA 129 passed, CEG 17 passed, MC/DC 14 passed.
 
+**Re-run on 2026-11-05 (final package).** Both tools were re-run per suite with
+exactly this protocol on `pricing.py` md5
+`8f75d97448e2bb41d1e3d70b3d127682` (code identical to the original run's;
+only the docstring wording differs): mutmut 3.8.0 in fresh WSL trees
+`~/mutmut-lab-r2/<suite>` (pytest 9.1.1), cosmic-ray 8.7.0 on Windows (Python
+3.14, pytest 9.1.1) in fresh scratch trees, two suites at a time. All eight
+tool × suite tallies and the survivors-by-function split below reproduced
+exactly; the per-mutant dumps corrected one explanation (number mutants, #3).
+The submitted `pricing.py` (md5 `53bdc5bb965582bcdfb5f2129154bf56`) differs
+from the measured file only in its docstring and comments — its code AST is
+identical — and mutmut re-run on it gave the same four tallies.
+
 ## Results
 
 | Tool | Suite | Killed | Survived | Total | Score |
@@ -112,7 +124,9 @@ The two tools agree on the head of the ranking and diverge at the tail:
 - **BVA is the best suite under both tools** (77.84 % / 88.05 %). Its 129
   boundary-anchored tests pin exact values on both sides of every decision
   boundary, which is precisely what kills comparison-operator mutants
-  (`<=` ↔ `<`, `>` ↔ `>=` …) and boundary-value arithmetic swaps.
+  (`<=` ↔ `<`, `>` ↔ `>=` …) and boundary-value arithmetic swaps. It is also the
+  only suite that kills the zero-adjacent number mutants (#3 below): 14 of
+  cosmic-ray's 16 and all 8 of mutmut's.
 - **EP is second under both tools** (75.57 % / 82.30 %). Its 52 partition tests
   additionally pin the *rounding-mode* partition (all four `rounding` values)
   and the fee-type partition, which is why only 2 of mutmut's string mutants on
@@ -131,7 +145,7 @@ The two tools agree on the head of the ranking and diverge at the tail:
   under a non-neutral setting are unobservable. cosmic-ray cannot generate
   string/default mutants at all, so that whole gap vanishes from its 226 and
   the two suites land within half a point of each other.
-- **Absolute scores are ~5–20 points higher under cosmic-ray for every suite.**
+- **Absolute scores are ~7–20 points higher under cosmic-ray for every suite.**
   Two mechanical reasons: (a) cosmic-ray's extra mutants are mostly *gross*
   operator swaps that any test kills (e.g. `* → <<`, `* → **`, `== → is` on
   `fee_type`), inflating the denominator with easy kills; (b) 11 of
@@ -172,7 +186,7 @@ set is the mutator table in `mutmut/mutation/mutators.py` (receipts below):
 
 | mutmut operator (function in `mutators.py`) | Behavior | Verified example from this run |
 |---|---|---|
-| `operator_number` | n → n+1 (only; no n−1) | — (few bare numbers in module) |
+| `operator_number` | n → n+1 (only; no n−1) | 8 mutants, one per bare `0` in the eight guards (`if fee_value <= 0:` → `if fee_value <= 1:`); BVA kills all 8, EP/CEG/MC-DC none |
 | `operator_string` | `"s"` → `"XXsXX"`, `"s"`→lower, →upper | `"half_up"` → `"XXhalf_upXX"`; `"percent"` → `"XXpercentXX"` / `"PERCENT"` (survived/killed per suite) |
 | `operator_swap_op` (`_operator_mapping`) | **one** target per source op: `+`→`-`, `*`→`/`, `//`→`/`, `%`→`/`, `**`→`*`, `&`→`\|`, `^`→`&`, `<<`→`>>`, `<`→`<=`, `>`→`>=`, `==`→`!=`, `and`↔`or`, aug-assign variants | `if fee_type == "percent":` → `!=` (killed) |
 | `operator_remove_unary_ops` | **removes** `not` / `~` entirely | `if not enabled:` → `if enabled:` (killed) |
@@ -206,14 +220,23 @@ set is the mutator table in `mutmut/mutation/mutators.py` (receipts below):
    (the `MONEY_QUANT`-adjacent `*`→`/` mutant). This is exactly why
    mutmut separates the suites much more sharply (75.6 vs 61.4) than
    cosmic-ray does (82.3 vs 81.4).
-3. **Number mutation: ±1 vs +1, and zero-adjacent equivalence.** cosmic-ray's
+3. **Number mutation: ±1 vs +1, and the band next to zero.** cosmic-ray's
    `NumberReplacer` fires 16 times — twice per `0` literal in the eight
-   `<= 0` / `> 0` / `< 0` guards (n+1 and n−1) — and **all 16 survive in all
-   four suites**: `fee_value <= 0 → <= 1` only differs for sub-unit positive
-   fees (e.g. `Decimal("0.50")`) that no suite probes, and the `→ -1` variants
-   are semantically equivalent for money (both branches yield `0.00`). mutmut's
-   `operator_number` (n+1 only) has nothing to fire on here. These 16 are
-   ~40 % of cosmic-ray's survivor count in every suite.
+   `<= 0` / `> 0` / `< 0` guards (n+1 and n−1) — and mutmut's `operator_number`
+   (n+1 only) fires 8 times, once per guard (`0 → 1`). These mutants change
+   behaviour only for inputs in the narrow band between −1 and 1 next to each
+   guard (for example a fee value of `0.005` or a rate of `−0.5`), so they
+   separate the suites sharply (re-measured 2026-11-05): **BVA kills 14 of
+   cosmic-ray's 16 and all 8 of mutmut's**, because its boundary probes sit
+   just above and below each zero edge; **EP, CEG and MC/DC kill none of
+   them**. Of the two BVA survivors, `total < 0 → total < −1`
+   (pricing.py:148) is truly equivalent — the total is never negative, so both
+   guards are always false — while `vat_rate_percent <= 0 → <= −1`
+   (pricing.py:79) is a real fault: a rate of `−0.5` then gives a VAT of
+   `−0.50` instead of `0.00`. All 212 example-based tests pass on it; the
+   Hypothesis property T3 ("VAT is never negative") fails on it at once. The
+   16 make up 16 of the 40, 43 and 42 survivors of EP, CEG and MC/DC, but only
+   2 of BVA's 27.
 4. **Unary `not`: removal vs replacement.** mutmut's
    `operator_remove_unary_ops` turns `if not enabled:` into `if enabled:`
    (verified diff) — a control-flow inversion every suite kills. cosmic-ray's
@@ -258,4 +281,9 @@ set is the mutator table in `mutmut/mutation/mutators.py` (receipts below):
   `pricing.x_compute_fee__mutmut_3` (`if not enabled:` → `if enabled:`).
 - Scratch trees (kept for re-inspection): WSL `~/mutmut-lab/{ep,bva,ceg,mcdc}`,
   Windows `%TEMP%\tss-mutation\cr-{ep,bva,ceg,mcdc}` (+ `cr_tally.py`,
-  `run-cr-all.ps1`, `cr-all.log`). Nothing under `tss/lab` was modified.
+  `run-cr-all.ps1`, `cr-all.log`). Nothing under `lab/` was modified.
+- Re-run 2026-11-05: mutmut per suite (killed/survived) 133/43, 137/39,
+  117/59, 108/68 in 5–9 s each; cosmic-ray 186/40, 199/27, 183/43, 184/42 in
+  1023–1364 s each; every scratch `pricing.py` restored (md5
+  `8f75d974…3127682`) and the package's `pricing.py` unchanged before and
+  after both runs.

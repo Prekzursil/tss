@@ -1,11 +1,11 @@
 """Order pricing composition (port for the TSS lab).
 
-Ported verbatim in behavior from the team repository
+Ported verbatim in behavior from the author's own repository
 ``momentstudio/backend/app/services/pricing.py`` (fetched via GitHub API on
-2026-10-16) so it can be used as the analysis target for black-box test design
-(EP / BVA / CEG / MC/DC).
+2026-10-16) so it can be used as the analysis target for black-box (EP / BVA /
+CEG) and structural (coverage / CFG / MC/DC / mutation) test design.
 
-Pure stdlib: ``decimal`` + ``dataclasses`` only.
+Pure stdlib: ``decimal`` + ``dataclasses`` + ``typing`` only.
 """
 
 from __future__ import annotations
@@ -140,11 +140,11 @@ def compute_totals(
         )
     total = taxable + shipping_q + fee + vat
     # Defensive guard, unreachable by construction (hence "pragma: no cover"):
-    # every summand entering this total is individually clamped to >= 0 before
-    # the sum -- taxable is floored at 0.00 above, shipping_q and vat are either
-    # 0.00 or non-negative quantized values, and fee comes from compute_fee
-    # which only ever returns 0.00 or a quantized positive fee_value -- so the
-    # sum of non-negatives can never be negative.
+    # every summand is non-negative -- taxable is floored at 0.00 above;
+    # shipping_q is 0.00 or a quantized positive shipping; vat is 0.00, the
+    # clamped override, or compute_vat() of a positive base and rate; fee is
+    # compute_fee() of the non-negative taxable (0.00, a quantized flat
+    # fee_value > 0, or quantized taxable * fee_value / 100) -- so total >= 0.
     if total < 0:  # pragma: no cover
         total = Decimal("0.00")
     total = quantize_money(total, rounding=rounding)
