@@ -6,12 +6,12 @@ Per the assignment note, the **analysis scope is declared as the whole
 `pricing` module** — the four public functions `quantize_money`,
 `compute_fee`, `compute_vat`, `compute_totals` plus the `PricingBreakdown`
 record (~4 functions). The module is a pure-stdlib
-(`decimal` + `dataclasses`) port of the team's own repository code
+(`decimal` + `dataclasses`) port of the author's own repository code
 (`momentstudio/backend/app/services/pricing.py`, fetched via GitHub API on
 2026-10-16); behavior is identical, so results transfer to the original.
 
 **Provenance, stated plainly.** The assignment asks for a program *and* its
-requirements. Here the program pre-dates the lab (it is the team's own
+requirements. Here the program pre-dates the lab (it is the author's own
 production code), so [`SPEC.md`](SPEC.md) was derived by observing that
 module's behavior rather than written before it. The assignment note permits
 declaring a bounded scope; it does not by itself authorize spec-after-code
@@ -87,7 +87,7 @@ coverage 100 % (57 statements, 22 branches, 0 missed).
 
 | Point | Deliverable | Artifacts |
 |---|---|---|
-| 1 | Program + requirements | `pricing.py` (port of the team's module) + [`SPEC.md`](SPEC.md) |
+| 1 | Program + requirements | `pricing.py` (port of the author's module) + [`SPEC.md`](SPEC.md) |
 | 2 | Coverage measurement/comparison | [`docs/coverage-comparison.md`](docs/coverage-comparison.md) |
 | 3 | Control-flow graph, V(G), basis paths | [`docs/cfg.drawio`](docs/cfg.drawio) + [`docs/cfg.svg`](docs/cfg.svg) + [`docs/cfg-analysis.md`](docs/cfg-analysis.md) + verifier [`docs/gen_cfg.py`](docs/gen_cfg.py) |
 | 4 | Test-design techniques (EP / BVA / CEG / MC-DC) | `tests/test_ep.py` + [`docs/ep.md`](docs/ep.md) · `tests/test_bva.py` + [`docs/bva.md`](docs/bva.md) · `tests/test_ceg.py` + [`docs/ceg.md`](docs/ceg.md) · `tests/test_mcdc.py` + [`docs/mcdc.md`](docs/mcdc.md) |
@@ -110,22 +110,15 @@ the natural completion of that numbering.)
 | 7 | Full run of all suites green with branch coverage | `python -m pytest tss/lab -q --cov=pricing --cov-branch --cov-fail-under=100` | done (212 passed, 100 %) |
 | 8 | CFG + coverage comparison + mutation labs (assignment points 2, 3, 5–7) | `docs/`, `mutants/` | done (see map above) |
 
-## Team contribution declaration (assignment points 1–7)
+## Contribution declaration (assignment points 1–7)
 
-**FILL IN BEFORE SUBMISSION** — names and final percentages are the team's own
-declaration. Per the assignment, each member declares at the end of the
-project which of points 1–7 they contributed to, with percentages summing to
-100 %.
+**Individual submission.** This lab was produced and is presented by a single
+author, who directed, reviewed and takes responsibility for all seven points.
 
 | Member | Points contributed to | Own percentage |
 |---|---|---|
-| Member 1 — [NAME] | points 1a, 1c, 2, 3 | [XX] % |
-| Member 2 — [NAME] | points 1b, 4, 5, 6, 7 | [YY] % |
-
-[XX] + [YY] = 100 %. If this is a solo submission, keep one row and declare
-100 %.
+| Andrei Mihai Visalon | points 1–7 (all) | 100 % |
 
 AI assistance for every deliverable is itemized in
-[`AI_USAGE.md`](AI_USAGE.md); the declaration above concerns the team's own
-direction, review and responsibility, which the members state in person at
-the presentation.
+[`AI_USAGE.md`](AI_USAGE.md); the declaration above concerns the author's own
+direction, review and responsibility, stated in person at the presentation.
