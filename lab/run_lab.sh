@@ -47,7 +47,8 @@ suites = [
     ("All (+Hypothesis)", ["tests"]),
 ]
 
-print(f"{chr(39)+"Suite"+chr(39) if False else "Suite":<19} | {"Tests":>5} | {"Line Coverage":<18} | {"Branch Coverage":<18} | {"Missing Lines"}")
+print("{:<19} | {:>5} | {:<18} | {:<18} | {}".format(
+    "Suite", "Tests", "Line Coverage", "Branch Coverage", "Missing Lines"))
 print("-" * 82)
 
 cov_json = Path("coverage.json")
