@@ -1,7 +1,7 @@
 # Manual mutation testing — tasks 5 & 6 (pricing module)
 
-Hands-on mutation lab on `tss/lab/pricing.py`. Three order-1 mutants were
-hand-built as full copies of the module in `tss/lab/mutants/`:
+Hands-on mutation lab on `pricing.py`. Three order-1 mutants were
+hand-built as full copies of the module in `mutants/`:
 
 | variant | file | mutated line (in `pricing.py` numbering) | change | operator class | claimed verdict |
 |---|---|---|---|---|---|
@@ -32,7 +32,7 @@ mutant differs from `pricing.py` on exactly one line —
 ## 1. Chosen test case
 
 `tests/test_mcdc.py::test_mcdc_c03_compute_fee_type_percent`
-(`tss/lab/tests/test_mcdc.py:63-81`) — the MC/DC minimal pair for condition
+(`tests/test_mcdc.py:64-82`) — the MC/DC minimal pair for condition
 **C3** `fee_type == "percent"` (`pricing.py:59`). It fixes
 `taxable_subtotal=200`, `enabled=True`, `fee_value=5` and flips only
 `fee_type`, asserting both rows exactly:
@@ -115,12 +115,16 @@ branch is unreachable (consistent with the `# pragma: no cover` at
 `total == 0` (where, by the case analysis, it is a no-op), and when
 `total == 0` each summand is individually `0`. ∎
 
-**Domain closure.** Non-finite `Decimal`s raise identically in both programs
-*before* line 148 (`Decimal("Infinity").quantize(...)` raises
+**Domain closure.** A non-finite `Decimal` either raises identically in both
+programs *before* line 148 (`Decimal("Infinity").quantize(...)` raises
 `InvalidOperation`; NaN comparisons like `discount > 0` raise
-`InvalidOperation`), so no exceptional path separates them either.
+`InvalidOperation`) or is discarded before the line-141 sum by a `> 0` / `<= 0`
+guard or a disabled flag (e.g. `discount=Decimal("-Infinity")` acts as no
+discount), after which every summand is finite and the case analysis above
+applies unchanged; so no exceptional path separates them either.
 
-**Corollary.** No test — in this suite or any conceivable suite — can kill
+**Corollary.** No test run under Python's default decimal context (which the
+module never changes) — in this suite or any conceivable suite — can kill
 this mutant; the observed full-suite survival (212 passed, receipt below) is
 forced by the proof, not luck. This is exactly why equivalent mutants must be
 *proven* away, not merely left on the survivors list.
@@ -155,7 +159,7 @@ chosen test. This is the MC/DC discipline's built-in blind spot: a minimal
 pair varies one condition and freezes everything else, so it says nothing
 about the frozen inputs' own boundaries.
 
-**Non-equivalence** is witnessed by any `fee_value ∈ (0, 4]`:
+**Non-equivalence** is witnessed by any `fee_value ∈ [0.005, 4]` (default `half_up`; a smaller positive value such as `0.004` already rounds to `0.00` in the original, so it does not separate the two):
 `compute_fee(taxable_subtotal=100, enabled=True, fee_type="flat",
 fee_value=2)` = `2.00` (original) vs `0.00` (mutant) — executed live by
 `run_demo.py` (receipt below). The **full suite kills it** (10 failed, 202
@@ -168,9 +172,9 @@ and `test_b9_flat_fee_tie_per_mode[...]` (`fee_value 2.345 <= 4`), and
 
 ## 4. Demonstrating output
 
-`python tss/lab/mutants/run_demo.py` (run 2026-10-16, exit code 0). For each
+`python mutants/run_demo.py` (run 2026-10-16, exit code 0). For each
 variant the runner installs the mutant as `pricing.py` in an isolated sandbox
-with a copy of `tss/lab/tests/` and runs (a) the chosen test case and (b) the
+with a copy of `tests/` and runs (a) the chosen test case and (b) the
 full 212-test suite via `python -m pytest -q`; it also executes the
 distinguishing inputs in-process:
 
@@ -222,14 +226,17 @@ both scopes and the `total == 0` firing-state probes.
 ## 5. Reproducing
 
 ```
-cd <repo root>
-python -m pytest tss/lab/tests -q                 # baseline: 212 passed
-python tss/lab/mutants/run_demo.py                # this demo; exit 0 iff all claims match
+cd lab
+python -m pytest tests -q                 # baseline: 220 passed (212 example-based + 8 Hypothesis)
+python -m pytest tests -q --ignore=tests/test_properties.py   # the 212 example-based tests run_demo.py uses
+python mutants/run_demo.py                # this demo; exit 0 iff all claims match
 for m in mutant_equivalent mutant_killed mutant_surviving; do
-    diff tss/lab/pricing.py tss/lab/mutants/$m.py   # exactly one line differs each
+    diff pricing.py mutants/$m.py   # exactly one line differs each
 done
 ```
 
-Baseline receipt (original module, before any mutation):
-`python -m pytest "C:/Users/Prekzursil/.zcode/workspace/default/tss/lab/tests" -q`
-→ `212 passed in 1.62s` (pytest 8.4.2).
+Baseline receipt (original module, before any mutation; re-run 2026-11-05):
+`python -m pytest tests -q` (run from the lab/ folder) → `220 passed`
+(212 example-based + 8 Hypothesis properties); with
+`--ignore=tests/test_properties.py` → `212 passed`, the full-suite scope that
+`run_demo.py` uses.

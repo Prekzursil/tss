@@ -11,3 +11,4 @@ node_modules/
 # CI + coverage local artifacts
 .coverage
 coverage.xml
+.hypothesis/

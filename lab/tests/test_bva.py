@@ -2,7 +2,7 @@
 
 Scope: boundary-value neighbors ONLY (clamps at 0, cent ties per rounding mode,
 quantization at 0.01, sign boundaries, VAT override switch points).
-Derivation tables: tss/lab/docs/bva.md.  All assertions are exact Decimal
+Derivation tables: docs/bva.md.  All assertions are exact Decimal
 equality; two-decimal shape (R1) is asserted via the decimal exponent.
 Tests are independent: no shared fixtures, no ordering dependence.
 
@@ -305,7 +305,7 @@ B12_BASE_ZERO = [
     ("-100.001", "-0.001", "0.00"),
     ("-100.00", "0", "0.00"),
     ("-99.999", "0.001", "0.00"),  # 0.001 * 100/100 = 0.001 -> 0.00
-    ("-99.99", "0.01", "0.01"),  # smallest surviving positive base
+    ("-99.99", "0.01", "0.01"),  # first surviving base here (>= 0.005 survives too)
 ]
 
 

@@ -1,4 +1,4 @@
-"""Generate + verify the control-flow graph of tss/lab/pricing.py.
+"""Generate + verify the control-flow graph of pricing.py.
 
 Produces (in this directory):
   - cfg.drawio : draw.io XML (mxGraphModel) with numbered nodes N1..N51,
@@ -17,7 +17,7 @@ Then VERIFIES, by re-parsing the emitted cfg.drawio:
      documented call-edge table.
 
 ASCII-only stdout so it prints cleanly in cmd.exe.
-Run from the workspace root:  python tss/lab/docs/gen_cfg.py
+Run from the lab/ folder:  python docs/gen_cfg.py
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ HERE = Path(__file__).resolve().parent
 LAB = HERE.parent
 sys.path.insert(0, str(LAB))
 
-import pricing  # noqa: E402  (module under analysis, tss/lab/pricing.py)
+import pricing  # noqa: E402  (module under analysis, pricing.py)
 
 # ---------------------------------------------------------------------------
 # 1. GRAPH DATA  (basic blocks derived manually from pricing.py; see
@@ -453,7 +453,7 @@ def write_svg(path):
         '<rect x="0" y="0" width="%d" height="%d" fill="#ffffff"/>' % (total_w, total_h))
     out.append(
         '<text x="%d" y="28" font-size="16" font-weight="bold" fill="#212121">'
-        "pricing.py - control-flow graph (51 basic blocks / 62 control edges / "
+        "pricing.py - control-flow graph (51 nodes / 62 control edges / "
         "11 call edges)</text>" % MARGIN)
     # legend
     lx = MARGIN

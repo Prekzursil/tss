@@ -4,7 +4,7 @@ Task: *transform the pricing module into a directed graph* — build the CFG,
 compute V(G) = E − N + 2P per function and for the module, and identify a
 basis set of linearly independent paths covering **all** edges.
 
-**Artifacts** (all in `tss/lab/docs/`):
+**Artifacts** (all in `docs/`):
 
 | File | Content |
 |---|---|
@@ -12,7 +12,7 @@ basis set of linearly independent paths covering **all** edges.
 | [`cfg.svg`](cfg.svg) | the same graph rendered as a deterministic hand-written SVG (boxes + arrowed edges, banded per function, legend) so docs can embed an image |
 | [`gen_cfg.py`](gen_cfg.py) | generator + verifier: emits both files from one graph data structure, then re-parses `cfg.drawio` and machine-checks every count and every basis path (receipts in §7) |
 
-Module under analysis: [`tss/lab/pricing.py`](../pricing.py) — the four public
+Module under analysis: [`pricing.py`](../pricing.py) — the four public
 callables declared in [`SPEC.md` §1](../SPEC.md) and
 [`README.md` "Scope declaration"](../README.md): `quantize_money` (L31–33),
 `compute_fee` (L47–63), `compute_vat` (L66–88), `compute_totals` (L91–159).
@@ -32,9 +32,9 @@ control flow, so it has no CFG nodes.
 * **Decisions**: every `if`/`elif` condition is its own decision node with a
   `T` and an `F` out-edge. **Conditional (ternary) expressions count as
   decisions too** — `pricing.py` L107–109, L114–116 and L127–129 are genuine
-  two-way branch points (they select between different computations, and
-  `coverage.py --branch`, configured in `pyproject.toml` with `branch = true`,
-  counts them as arcs). There are no loops, no `and`/`or` short-circuits, no
+  two-way branch points (they select between different computations; note that
+  `coverage.py --branch` does NOT count them - its 22 arcs come from the 11 `if`
+  lines alone, measured 2026-11-05). There are no loops, no `and`/`or` short-circuits, no
   `try`/`except` and no comprehensions in the module (verified by the AST
   walk in §7, check 2).
 * **Call edges**: an interprocedural dashed edge from the basic block
@@ -200,6 +200,20 @@ McCabe numbers. Decision counts per function (7+5+3+0 = 15 ternary+if
 decisions, each with T and F out-edges) reproduce the same numbers via the
 `decisions + 1` rule — machine-checked two ways in §7.
 
+### 4.1 The circuit derived from the graph (the assignment's wording)
+
+The assignment asks for the cyclomatic complexity of *the circuit derived from*
+the graph and for linearly independent *circuits* covering all arcs. The derived
+circuit is the standard construction: add one return edge EXIT → ENTER to each of
+the 4 function graphs, which makes each of them strongly connected. Its
+cyclomatic number E′ − N + P = (62 + 4) − 51 + 4 = **19** equals McCabe's
+V(G) = E − N + 2P above. Each basis path of §5 runs from a function's ENTER to
+its EXIT; closing it with that function's return edge makes it a circuit. The
+19 basis paths therefore give **19 linearly independent circuits** (dropping the
+return edges recovers the independent paths, whose GF(2) rank `gen_cfg.py`
+checks), and together they cover every arc: all 62 control edges (§5) plus the
+4 return edges, each of which closes every circuit of its function.
+
 ## 5. Basis set of linearly independent paths (19 paths, all edges covered)
 
 Each function's basis has exactly V(G) members. Properties (all machine-
@@ -298,16 +312,16 @@ All checks were run during this task on this machine (Python 3.14.6,
 Windows). One command regenerates both artifacts and runs every check:
 
 ```
-$ cd C:/Users/Prekzursil/.zcode/workspace/default
-$ python tss/lab/docs/gen_cfg.py
+$ cd lab
+$ python docs/gen_cfg.py
 ```
 
 Key output (verbatim; the run prints 69 PASS lines, 0 failures, exit code 0):
 
 ```
 == generating cfg.drawio / cfg.svg ==
-  wrote C:\...\tss\lab\docs\cfg.drawio
-  wrote C:\...\tss\lab\docs\cfg.svg
+  wrote C:\...\lab\docs\cfg.drawio
+  wrote C:\...\lab\docs\cfg.svg
 
 == check 1: reparse cfg.drawio, recount E/N, V = E-N+2P ==
 PASS drawio: every node lies in exactly one function band
