@@ -126,7 +126,7 @@ For answers to common questions about this code of conduct, see the FAQ at
 
 ## Contact
 
-Report conduct violations privately via [private vulnerability reporting](https://github.com/Prekzursil/env-inspector/security/advisories/new) (a private channel to the maintainer) or through the maintainer's [GitHub profile](https://github.com/Prekzursil).
+Report conduct violations privately via [private vulnerability reporting](https://github.com/Prekzursil/tss/security/advisories/new) (a private channel to the maintainer) or through the maintainer's [GitHub profile](https://github.com/Prekzursil).
 
 [homepage]: https://www.contributor-covenant.org
 [v2.1]: https://www.contributor-covenant.org/version/2/1/code_of_conduct.html
